@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#eb5e28" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title>TUKI! STICKERS | MVP</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div>
+          <p class="eyebrow">MVP operativo</p>
+          <h1>TUKI! STICKERS</h1>
+          <p class="sidebar-copy">
+            Catalogo, ventas, stock y recomendaciones en una sola vista.
+          </p>
+        </div>
+
+        <nav class="nav">
+          <a class="nav-link active" href="#dashboard" data-view="dashboard">Resumen</a>
+          <a class="nav-link" href="#catalog" data-view="catalog">Catalogo</a>
+          <a class="nav-link" href="#sales" data-view="sales">Ventas</a>
+          <a class="nav-link" href="#restock" data-view="restock">Ingresos</a>
+          <a class="nav-link" href="#assistant" data-view="assistant">Asistente</a>
+        </nav>
+
+        <section class="panel panel-muted">
+          <h2>Estado</h2>
+          <p id="last-updated">Sin cambios guardados todavia.</p>
+          <p id="sync-status" class="hint">Modo local. Sin sincronizacion remota.</p>
+          <div class="action-stack">
+            <button id="export-button" class="secondary-button">Exportar respaldo</button>
+            <button id="import-button" class="secondary-button">Importar respaldo</button>
+            <button id="seed-button" class="secondary-button">Cargar demo</button>
+            <button id="reset-button" class="ghost-button">Resetear datos</button>
+            <input id="import-file" type="file" accept="application/json" hidden />
+          </div>
+        </section>
+      </aside>
+
+      <main class="main-content">
+        <section id="dashboard" class="view active">
+          <header class="section-header">
+            <div>
+              <p class="eyebrow">Control diario</p>
+              <h2>Resumen del negocio</h2>
+            </div>
+            <div class="badge">MVP local</div>
+          </header>
+
+          <div class="stats-grid">
+            <article class="stat-card">
+              <span>Stock total</span>
+              <strong id="stat-total-stock">0</strong>
+              <small>Unidades disponibles</small>
+            </article>
+            <article class="stat-card">
+              <span>Modelos activos</span>
+              <strong id="stat-active-products">0</strong>
+              <small>Con stock disponible</small>
+            </article>
+            <article class="stat-card">
+              <span>Ventas totales</span>
+              <strong id="stat-total-sales">0</strong>
+              <small>Unidades vendidas</small>
+            </article>
+            <article class="stat-card">
+              <span>Ingresos estimados</span>
+              <strong id="stat-revenue">$0</strong>
+              <small>Suma de ventas registradas</small>
+            </article>
+          </div>
+
+          <div class="two-column">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Top modelos</h3>
+                <span class="hint">Por unidades vendidas</span>
+              </div>
+              <div id="top-products-chart" class="chart-list empty-state-inline"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Ventas por canal</h3>
+                <span class="hint">Feria, local y online</span>
+              </div>
+              <div id="sales-channel-chart" class="chart-list empty-state-inline"></div>
+            </section>
+          </div>
+
+          <div class="two-column">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Tendencias por vinilo</h3>
+                <span class="hint">Que acabado rota mejor</span>
+              </div>
+              <div id="material-chart" class="chart-list empty-state-inline"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Alertas de stock</h3>
+                <span class="hint">Modelos para reponer</span>
+              </div>
+              <div id="stock-alerts" class="list-card empty-state-inline"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="catalog" class="view">
+          <header class="section-header">
+            <div>
+              <p class="eyebrow">Base maestra</p>
+              <h2>Catalogo de stickers</h2>
+            </div>
+          </header>
+
+          <div class="section-tabs">
+            <a class="section-tab active" href="#catalog-gallery" data-tab-group="catalog" data-tab="catalog-gallery">Catalogo visual</a>
+            <a class="section-tab" href="#catalog-themes" data-tab-group="catalog" data-tab="catalog-themes">Tematicas</a>
+            <a class="section-tab" href="#catalog-filters" data-tab-group="catalog" data-tab="catalog-filters">Filtros de catalogo</a>
+            <a class="section-tab" href="#catalog-new" data-tab-group="catalog" data-tab="catalog-new">Cargar nuevo modelo</a>
+          </div>
+
+          <section id="catalog-gallery" class="tab-panel active" data-tab-group="catalog">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Catalogo visual</h3>
+                <span id="catalog-gallery-count" class="hint">0 modelos</span>
+              </div>
+              <div class="gallery-toolbar">
+                <label class="wide">
+                  Buscar por nombre
+                  <input id="catalog-gallery-search" placeholder="Ej. Goku, Messi, Hello Kitty" />
+                </label>
+              </div>
+              <div id="catalog-gallery-grid" class="magazine-grid empty-state-inline"></div>
+            </section>
+          </section>
+
+          <section id="catalog-themes" class="tab-panel" data-tab-group="catalog">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Tematicas</h3>
+                <span class="hint">Gestiona opciones precargadas</span>
+              </div>
+              <form id="theme-form" class="form-grid">
+                <label class="wide">
+                  Nueva tematica
+                  <input name="themeName" placeholder="Anime" required />
+                </label>
+                <button type="submit" class="secondary-button wide">Agregar tematica</button>
+              </form>
+              <div id="theme-list" class="list-card"></div>
+            </section>
+          </section>
+
+          <section id="catalog-new" class="tab-panel" data-tab-group="catalog">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Nuevo modelo</h3>
+                <span class="hint">Carga imagen y atributos</span>
+              </div>
+              <form id="product-form" class="form-grid">
+                <label>
+                  SKU
+                  <input name="sku" required placeholder="TUKI-001" />
+                </label>
+                <label>
+                  Nombre
+                  <input name="name" required placeholder="Goku rojo holografico" />
+                </label>
+                <label>
+                  Tematica
+                  <select name="theme" id="product-theme"></select>
+                </label>
+                <label>
+                  Incluye personaje
+                  <select name="character">
+                    <option value="Si">Si</option>
+                    <option value="No">No</option>
+                  </select>
+                </label>
+                <label>
+                  Vinilo
+                  <select name="material" id="product-material"></select>
+                </label>
+                <label>
+                  Color predominante
+                  <input name="color" placeholder="Rojo" />
+                </label>
+                <label>
+                  Precio
+                  <input name="price" type="number" min="0" step="1" value="2500" />
+                </label>
+                <label>
+                  Stock inicial
+                  <input name="stock" type="number" min="0" step="1" value="0" />
+                </label>
+                <label>
+                  Stock minimo
+                  <input name="minStock" type="number" min="0" step="1" value="2" />
+                </label>
+                <label>
+                  Imagen
+                  <input name="image" type="file" accept="image/*" />
+                </label>
+                <label class="wide">
+                  Notas IA o tags
+                  <input name="tags" placeholder="anime, rojo, energia, protagonista" />
+                </label>
+                <button type="submit" class="primary-button wide">Guardar modelo</button>
+              </form>
+
+              <div class="panel-header compact-header">
+                <h4>QR del modelo</h4>
+                <span class="hint">Descargalo para imprimirlo detras del sticker</span>
+              </div>
+              <div id="product-qr-preview" class="list-card empty-state-inline"></div>
+              <div class="scanner-actions">
+                <button id="generate-qr-button" type="button" class="secondary-button">Generar QR</button>
+                <button id="verify-qr-button" type="button" class="secondary-button">Verificar QR</button>
+                <button id="download-qr-button" type="button" class="primary-button">Descargar PNG</button>
+              </div>
+            </section>
+          </section>
+
+          <section id="catalog-filters" class="tab-panel" data-tab-group="catalog">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Filtros del catalogo</h3>
+                <span id="catalog-count" class="hint">0 modelos</span>
+              </div>
+
+              <div class="filter-grid">
+                <label class="wide">
+                  Buscar
+                  <input id="catalog-search" placeholder="SKU, nombre, personaje, tags" />
+                </label>
+                <label>
+                  Tematica
+                  <select id="catalog-theme-filter"></select>
+                </label>
+                <label>
+                  Vinilo
+                  <select id="catalog-material-filter"></select>
+                </label>
+                <label>
+                  Estado de stock
+                  <select id="catalog-stock-filter">
+                    <option value="all">Todos</option>
+                    <option value="low">Stock bajo</option>
+                    <option value="available">Con stock</option>
+                    <option value="out">Sin stock</option>
+                  </select>
+                </label>
+                <label>
+                  Ingreso desde
+                  <input id="catalog-date-from" type="date" />
+                </label>
+                <label>
+                  Ingreso hasta
+                  <input id="catalog-date-to" type="date" />
+                </label>
+                <label>
+                  Minimo de unidades
+                  <input id="catalog-min-units" type="number" min="0" step="1" placeholder="0" />
+                </label>
+                <div class="filter-actions">
+                  <button id="clear-catalog-filters" type="button" class="ghost-button">
+                    Limpiar filtros
+                  </button>
+                </div>
+              </div>
+
+              <div id="catalog-table" class="catalog-grid empty-state-inline"></div>
+            </section>
+          </section>
+        </section>
+
+        <section id="sales" class="view">
+          <header class="section-header">
+            <div>
+              <p class="eyebrow">Operacion</p>
+              <h2>Registrar venta</h2>
+            </div>
+          </header>
+
+          <div class="section-tabs">
+            <a class="section-tab active" href="#sales-fast" data-tab-group="sales" data-tab="sales-fast">Venta rapida</a>
+            <a class="section-tab" href="#sales-scan" data-tab-group="sales" data-tab="sales-scan">Escanear</a>
+            <a class="section-tab" href="#sales-manual" data-tab-group="sales" data-tab="sales-manual">Venta manual</a>
+            <a class="section-tab" href="#sales-history" data-tab-group="sales" data-tab="sales-history">Ultimas ventas</a>
+          </div>
+
+          <section id="sales-fast" class="tab-panel active" data-tab-group="sales">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Modo rapido de feria</h3>
+                <span class="hint">Carga por SKU o ID</span>
+              </div>
+
+              <form id="quick-sale-form" class="form-grid">
+                <label>
+                  SKU / ID
+                  <input id="quick-sale-sku" name="sku" list="sku-suggestions" placeholder="TUKI-001" required />
+                </label>
+                <label>
+                  Cantidad
+                  <input
+                    id="quick-sale-quantity"
+                    name="quantity"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value="1"
+                    required
+                  />
+                </label>
+                <label>
+                  Canal
+                  <select id="quick-sale-channel" name="channel">
+                    <option value="Feria">Feria</option>
+                    <option value="Local">Local amigo</option>
+                    <option value="Online">Online</option>
+                  </select>
+                </label>
+                <div class="inline-note">
+                  <strong id="quick-sale-price-preview">$0</strong>
+                  <span class="hint">Precio automatico segun SKU</span>
+                </div>
+                <button type="submit" class="primary-button wide">Registrar rapido</button>
+              </form>
+
+              <div id="quick-sale-preview" class="list-card empty-state-inline"></div>
+              <datalist id="sku-suggestions"></datalist>
+
+              <div class="panel-header compact-header">
+                <h4>SKUs mas vendidos</h4>
+                <span class="hint">Atajo visual</span>
+              </div>
+              <div id="quick-sale-grid" class="quick-sale-grid empty-state-inline"></div>
+            </section>
+          </section>
+
+          <section id="sales-scan" class="tab-panel" data-tab-group="sales">
+            <div class="two-column">
+              <section class="panel">
+                <div class="panel-header">
+                  <h3>Escaner de camara</h3>
+                  <span class="hint">Escanea varios stickers y confirma al final</span>
+                </div>
+
+                <div class="scanner-toolbar">
+                  <label>
+                    Canal
+                    <select id="scanner-channel">
+                      <option value="Feria">Feria</option>
+                      <option value="Local">Local amigo</option>
+                      <option value="Online">Online</option>
+                    </select>
+                  </label>
+                  <div class="scanner-actions">
+                    <button id="start-scanner" type="button" class="primary-button">Iniciar camara</button>
+                    <button id="stop-scanner" type="button" class="ghost-button">Detener</button>
+                    <button id="capture-scanner-frame" type="button" class="secondary-button">Capturar y leer</button>
+                    <button id="upload-scanner-image" type="button" class="secondary-button">Subir imagen</button>
+                  </div>
+                  <input id="scanner-image-file" type="file" accept="image/*" hidden />
+                </div>
+
+                <div class="scanner-stage">
+                  <video id="scanner-video" playsinline muted></video>
+                  <div class="scanner-overlay">
+                    <div class="scanner-frame"></div>
+                  </div>
+                </div>
+
+                <div id="scanner-status" class="inline-note">
+                  <strong>Camara inactiva</strong>
+                  <span class="hint">Inicia la camara y apunta al codigo del sticker</span>
+                </div>
+
+                <div id="scanner-last-read" class="list-card empty-state-inline"></div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-header">
+                  <h3>Venta en preparacion</h3>
+                  <span class="hint">Confirma cuando termines de escanear</span>
+                </div>
+
+                <div class="scanner-summary">
+                  <article class="stat-card compact">
+                    <span>Items</span>
+                    <strong id="scanner-cart-count">0</strong>
+                    <small>Unidades escaneadas</small>
+                  </article>
+                  <article class="stat-card compact">
+                    <span>Total estimado</span>
+                    <strong id="scanner-cart-total">$0</strong>
+                    <small>Suma segun precios cargados</small>
+                  </article>
+                </div>
+
+                <div id="scanner-cart" class="list-card empty-state-inline"></div>
+
+                <div class="scanner-actions footer-actions">
+                  <button id="clear-scanner-cart" type="button" class="ghost-button">Vaciar</button>
+                  <button id="confirm-scanner-sale" type="button" class="primary-button">Confirmar venta</button>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <section id="sales-manual" class="tab-panel" data-tab-group="sales">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Venta manual</h3>
+                <span class="hint">Para casos especiales</span>
+              </div>
+              <form id="sale-form" class="form-grid">
+                <label class="wide">
+                  Modelo
+                  <select name="sku" id="sale-sku" required></select>
+                </label>
+                <label>
+                  Canal
+                  <select name="channel">
+                    <option value="Feria">Feria</option>
+                    <option value="Local">Local amigo</option>
+                    <option value="Online">Online</option>
+                  </select>
+                </label>
+                <label>
+                  Cantidad
+                  <input name="quantity" type="number" min="1" step="1" value="1" />
+                </label>
+                <div class="inline-note">
+                  <strong id="sale-price-preview">$0</strong>
+                  <span class="hint">Precio automatico segun modelo</span>
+                </div>
+                <label>
+                  Fecha
+                  <input name="date" type="date" />
+                </label>
+                <label class="wide">
+                  Notas
+                  <input name="notes" placeholder="Se llevo combo de anime" />
+                </label>
+                <button type="submit" class="primary-button wide">Registrar venta</button>
+              </form>
+            </section>
+          </section>
+
+          <section id="sales-history" class="tab-panel" data-tab-group="sales">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Ultimas ventas</h3>
+                <span id="sales-count" class="hint">0 movimientos</span>
+              </div>
+              <div id="sales-list" class="list-card empty-state-inline"></div>
+            </section>
+          </section>
+        </section>
+
+        <section id="restock" class="view">
+          <header class="section-header">
+            <div>
+              <p class="eyebrow">Produccion</p>
+              <h2>Registrar ingresos</h2>
+            </div>
+          </header>
+
+          <div class="two-column">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Nuevo ingreso</h3>
+                <span class="hint">Carga una reposicion o lote nuevo</span>
+              </div>
+              <form id="restock-form" class="form-grid">
+                <label class="wide">
+                  Modelo
+                  <select name="sku" id="restock-sku" required></select>
+                </label>
+                <label>
+                  Cantidad
+                  <input name="quantity" type="number" min="1" step="1" value="10" />
+                </label>
+                <label>
+                  Costo unitario
+                  <input name="unitCost" type="number" min="0" step="1" value="900" />
+                </label>
+                <label>
+                  Vinilo
+                  <select name="material" id="restock-material"></select>
+                </label>
+                <label>
+                  Fecha
+                  <input name="date" type="date" />
+                </label>
+                <label class="wide">
+                  Lote o nota
+                  <input name="batch" placeholder="Pedido abril Santa Fe" />
+                </label>
+                <button type="submit" class="primary-button wide">Registrar ingreso</button>
+              </form>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Ultimos ingresos</h3>
+                <span id="restock-count" class="hint">0 movimientos</span>
+              </div>
+              <div id="restock-list" class="list-card empty-state-inline"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="assistant" class="view">
+          <header class="section-header">
+            <div>
+              <p class="eyebrow">Decision asistida</p>
+              <h2>Reporte inteligente</h2>
+            </div>
+          </header>
+
+          <div class="stats-grid mini-stats">
+            <article class="stat-card compact">
+              <span>Tematica top</span>
+              <strong id="assistant-top-theme">-</strong>
+              <small id="assistant-top-theme-detail">Sin datos</small>
+            </article>
+            <article class="stat-card compact">
+              <span>Vinilo top</span>
+              <strong id="assistant-top-material">-</strong>
+              <small id="assistant-top-material-detail">Sin datos</small>
+            </article>
+            <article class="stat-card compact">
+              <span>Color top</span>
+              <strong id="assistant-top-color">-</strong>
+              <small id="assistant-top-color-detail">Sin datos</small>
+            </article>
+            <article class="stat-card compact">
+              <span>Reposiciones urgentes</span>
+              <strong id="assistant-low-stock-count">0</strong>
+              <small>Modelos por debajo del minimo</small>
+            </article>
+          </div>
+
+          <div class="two-column">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Resumen accionable</h3>
+                <span class="hint">Basado en ventas y stock</span>
+              </div>
+              <div id="assistant-report" class="assistant-report empty-state-inline"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Graficos del asistente</h3>
+                <span class="hint">Lectura rapida para decidir</span>
+              </div>
+              <div class="assistant-charts">
+                <div>
+                  <h4>Tematicas</h4>
+                  <div id="assistant-theme-chart" class="chart-list empty-state-inline"></div>
+                </div>
+                <div>
+                  <h4>Colores</h4>
+                  <div id="assistant-color-chart" class="chart-list empty-state-inline"></div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" aria-live="polite" hidden></div>
+    <div id="runtime-error" class="runtime-error" hidden></div>
+
+    <div id="product-detail-modal" class="modal-shell" hidden>
+      <div class="modal-backdrop" data-close-modal="true"></div>
+      <section class="modal-card">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Ficha del modelo</p>
+            <h3 id="product-detail-title">Detalle</h3>
+          </div>
+          <button id="close-product-detail" type="button" class="ghost-button">Cerrar</button>
+        </div>
+
+        <div class="modal-layout">
+          <div class="modal-media">
+            <div id="product-detail-image" class="list-card empty-state-inline"></div>
+            <div class="panel-header compact-header">
+              <h4>QR del modelo</h4>
+              <span class="hint">Disponible para volver a descargar</span>
+            </div>
+            <div id="product-detail-qr-preview" class="list-card empty-state-inline"></div>
+            <div class="scanner-actions">
+              <button id="product-detail-generate-qr" type="button" class="secondary-button">Generar QR</button>
+              <button id="product-detail-download-qr" type="button" class="primary-button">Descargar PNG</button>
+            </div>
+          </div>
+
+          <form id="product-detail-form" class="form-grid">
+            <input type="hidden" name="skuOriginal" />
+            <label>
+              SKU
+              <input name="sku" required />
+            </label>
+            <label>
+              Nombre
+              <input name="name" required />
+            </label>
+            <label>
+              Tematica
+              <select name="theme" id="product-detail-theme"></select>
+            </label>
+            <label>
+              Incluye personaje
+              <select name="character">
+                <option value="Si">Si</option>
+                <option value="No">No</option>
+              </select>
+            </label>
+            <label>
+              Vinilo
+              <select name="material" id="product-detail-material"></select>
+            </label>
+            <label>
+              Color predominante
+              <input name="color" />
+            </label>
+            <label>
+              Precio
+              <input name="price" type="number" min="0" step="1" />
+            </label>
+            <label>
+              Stock actual
+              <input name="stock" type="number" min="0" step="1" />
+            </label>
+            <label>
+              Alerta de reposicion
+              <input name="minStock" type="number" min="0" step="1" />
+            </label>
+            <label class="wide">
+              Reemplazar imagen
+              <input name="image" type="file" accept="image/*" />
+            </label>
+            <label class="wide checkbox-line">
+              <input name="removeImage" type="checkbox" value="yes" />
+              Quitar imagen actual
+            </label>
+            <label class="wide">
+              Tags / notas
+              <input name="tags" />
+            </label>
+            <div class="modal-actions wide">
+              <button id="product-detail-delete" type="button" class="ghost-button">Eliminar modelo</button>
+              <button id="product-detail-save" type="submit" class="primary-button">Guardar cambios</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <script src="qrcode.js"></script>
+    <script src="jsqr.min.js"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
