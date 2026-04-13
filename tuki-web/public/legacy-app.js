@@ -280,9 +280,12 @@ const els = {
   productDetailMaterial: document.getElementById("product-detail-material"),
 };
 
-init();
+init().catch((error) => {
+  console.error(error);
+  showRuntimeError(error?.message || "No pude iniciar la app.");
+});
 
-function init() {
+async function init() {
   installRuntimeErrorReporter();
   registerServiceWorker();
   hydrateLegacyState();
@@ -290,12 +293,12 @@ function init() {
   populateMaterialSelects();
   setTodayDefaults();
   bindEvents();
-  render();
   if (!window.location.hash) {
     window.location.hash = "#dashboard";
   }
   syncNavigationFromHash();
-  initRemoteSync();
+  await initRemoteSync();
+  render();
 }
 
 function bindEvents() {
@@ -1888,7 +1891,6 @@ async function initRemoteSync() {
     const remoteSnapshot = await fetchRemoteSnapshot();
     if (remoteSnapshot) {
       applyStateSnapshot(remoteSnapshot);
-      render();
     } else {
       await pushRemoteSnapshot();
     }
@@ -1914,13 +1916,14 @@ function startRemotePolling() {
   }
 
   window.addEventListener("focus", syncFromRemoteIfNeeded);
+  window.addEventListener("pageshow", syncFromRemoteIfNeeded);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
       syncFromRemoteIfNeeded();
     }
   });
 
-  remoteState.pollTimer = window.setInterval(syncFromRemoteIfNeeded, 8000);
+  remoteState.pollTimer = window.setInterval(syncFromRemoteIfNeeded, 2500);
 }
 
 function queueRemotePersist() {
@@ -2388,17 +2391,14 @@ function readFileAsDataUrl(file) {
 }
 
 function registerServiceWorker() {
-  if (!("serviceWorker" in navigator) || window.location.protocol === "file:") {
+  if (!("serviceWorker" in navigator)) {
     return;
   }
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("./service-worker.js")
-      .then((registration) => registration.update())
-      .catch((error) => {
-        console.error("No pude registrar el service worker", error);
-      });
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      registrations.forEach((registration) => registration.unregister());
+    });
   });
 }
 
