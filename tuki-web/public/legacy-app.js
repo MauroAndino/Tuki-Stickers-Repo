@@ -160,6 +160,7 @@ const remoteState = {
   lastError: "",
   pollTimer: null,
   syncing: false,
+  lastSyncedAt: 0,
 };
 const scannerState = {
   stream: null,
@@ -529,6 +530,8 @@ async function handleProductSubmit(event) {
     return;
   }
 
+  await prepareRemoteMutation();
+
   const product = {
     sku: normalizedSku,
     name: String(form.get("name")).trim(),
@@ -571,14 +574,14 @@ async function handleProductSubmit(event) {
     });
   }
 
-  persistState();
+  await persistState({ immediateRemote: true });
   showToast(`Modelo ingresado: ${product.name}`);
   formElement.reset();
   setTodayDefaults();
   render();
 }
 
-function handleThemeSubmit(event) {
+async function handleThemeSubmit(event) {
   event.preventDefault();
   const formElement = event.currentTarget;
   const form = new FormData(formElement);
@@ -593,21 +596,23 @@ function handleThemeSubmit(event) {
     return;
   }
 
+  await prepareRemoteMutation();
+
   state.themes.push(themeName);
   state.themes.sort((a, b) => a.localeCompare(b));
-  persistState();
+  await persistState({ immediateRemote: true });
   formElement.reset();
   render();
   showToast(`Tematica agregada: ${themeName}`);
 }
 
-function handleSaleSubmit(event) {
+async function handleSaleSubmit(event) {
   event.preventDefault();
   const formElement = event.currentTarget;
   const form = new FormData(formElement);
   const product = findProduct(String(form.get("sku")));
 
-  registerSale({
+  const success = await registerSale({
     sku: String(form.get("sku")),
     channel: String(form.get("channel")),
     quantity: Number(form.get("quantity") || 0),
@@ -617,13 +622,17 @@ function handleSaleSubmit(event) {
     notes: String(form.get("notes")).trim(),
   });
 
+  if (!success) {
+    return;
+  }
+
   formElement.reset();
   setTodayDefaults();
   render();
   showToast("Venta registrada");
 }
 
-function handleRestockSubmit(event) {
+async function handleRestockSubmit(event) {
   event.preventDefault();
   const formElement = event.currentTarget;
   const form = new FormData(formElement);
@@ -641,9 +650,16 @@ function handleRestockSubmit(event) {
     return;
   }
 
-  product.stock += quantity;
-  product.material = String(form.get("material"));
-  product.lastRestockAt = String(form.get("date")) || todayString();
+  await prepareRemoteMutation();
+  const freshProduct = findProduct(sku);
+  if (!freshProduct) {
+    window.alert("No pude actualizar ese modelo antes de guardar el ingreso.");
+    return;
+  }
+
+  freshProduct.stock += quantity;
+  freshProduct.material = String(form.get("material"));
+  freshProduct.lastRestockAt = String(form.get("date")) || todayString();
 
   state.restocks.unshift({
     id: makeId(),
@@ -655,14 +671,14 @@ function handleRestockSubmit(event) {
     batch: String(form.get("batch")).trim(),
   });
 
-  persistState();
+  await persistState({ immediateRemote: true });
   formElement.reset();
   setTodayDefaults();
   render();
-  showToast(`Ingreso registrado para ${product.name}`);
+  showToast(`Ingreso registrado para ${freshProduct.name}`);
 }
 
-function handleQuickSaleClick(event) {
+async function handleQuickSaleClick(event) {
   const button = event.target.closest("[data-quick-sale]");
   if (!button) {
     return;
@@ -676,7 +692,7 @@ function handleQuickSaleClick(event) {
     return;
   }
 
-  registerSale({
+  const success = await registerSale({
     sku,
     channel: els.quickSaleChannel.value,
     quantity,
@@ -686,11 +702,15 @@ function handleQuickSaleClick(event) {
     notes: "Carga rapida",
   });
 
+  if (!success) {
+    return;
+  }
+
   render();
   focusQuickSaleSku();
 }
 
-function handleQuickSaleSubmit(event) {
+async function handleQuickSaleSubmit(event) {
   event.preventDefault();
   const sku = sanitizeSku(els.quickSaleSku.value);
   const quantity = Number(els.quickSaleQuantity.value || 0);
@@ -701,7 +721,7 @@ function handleQuickSaleSubmit(event) {
     return;
   }
 
-  const success = registerSale({
+  const success = await registerSale({
     sku,
     channel: els.quickSaleChannel.value,
     quantity,
@@ -1021,7 +1041,7 @@ async function decodeCanvasForScanner(canvas, sourceLabel) {
   }
 }
 
-function confirmScannerSale() {
+async function confirmScannerSale() {
   if (!scannerState.cart.length) {
     window.alert("Todavia no hay stickers escaneados.");
     return;
@@ -1029,7 +1049,7 @@ function confirmScannerSale() {
 
   for (const item of scannerState.cart) {
     const product = findProduct(item.sku);
-    const success = registerSale({
+    const success = await registerSale({
       sku: item.sku,
       channel: els.scannerChannel.value,
       quantity: item.quantity,
@@ -1049,7 +1069,8 @@ function confirmScannerSale() {
   render();
 }
 
-function registerSale({ sku, channel, quantity, unitPrice, reference, date, notes }) {
+async function registerSale({ sku, channel, quantity, unitPrice, reference, date, notes }) {
+  await prepareRemoteMutation();
   const product = findProduct(sku);
 
   if (!product) {
@@ -1079,7 +1100,7 @@ function registerSale({ sku, channel, quantity, unitPrice, reference, date, note
     notes,
   });
 
-  persistState();
+  await persistState({ immediateRemote: true });
   return true;
 }
 
@@ -1875,10 +1896,10 @@ function loadState() {
   }
 }
 
-function persistState() {
+async function persistState(options = {}) {
   state.updatedAt = new Date().toISOString();
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  queueRemotePersist();
+  return queueRemotePersist(options);
 }
 
 async function initRemoteSync() {
@@ -1898,6 +1919,7 @@ async function initRemoteSync() {
 
     remoteState.ready = true;
     remoteState.lastError = "";
+    remoteState.lastSyncedAt = Date.now();
     setSyncStatus("Sync activa", "Compu y celu comparten los mismos datos.");
     startRemotePolling();
   } catch (error) {
@@ -1931,7 +1953,7 @@ function startRemotePolling() {
   remoteState.pollTimer = window.setInterval(syncFromRemoteIfNeeded, 1000);
 }
 
-function queueRemotePersist() {
+async function queueRemotePersist(options = {}) {
   if (!remoteState.enabled || !remoteState.ready) {
     return;
   }
@@ -1940,12 +1962,29 @@ function queueRemotePersist() {
     window.clearTimeout(remoteState.saveTimer);
   }
 
+  if (options.immediateRemote) {
+    setSyncStatus("Sincronizando", "Guardando cambios remotos...");
+    try {
+      await pushRemoteSnapshot();
+      state.updatedAt = new Date().toISOString();
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      remoteState.lastSyncedAt = Date.now();
+      setSyncStatus("Sync activa", "Cambios guardados en compu y celu.");
+    } catch (error) {
+      console.error(error);
+      remoteState.lastError = error?.message || "No pude guardar cambios remotos.";
+      setSyncStatus("Modo local", remoteState.lastError);
+    }
+    return;
+  }
+
   setSyncStatus("Sincronizando", "Guardando cambios remotos...");
   remoteState.saveTimer = window.setTimeout(async () => {
     try {
       await pushRemoteSnapshot();
       state.updatedAt = new Date().toISOString();
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      remoteState.lastSyncedAt = Date.now();
       setSyncStatus("Sync activa", "Cambios guardados en compu y celu.");
     } catch (error) {
       console.error(error);
@@ -2009,6 +2048,7 @@ async function syncFromRemoteIfNeeded() {
 
     applyStateSnapshot(remoteSnapshot);
     render();
+    remoteState.lastSyncedAt = Date.now();
     setSyncStatus("Sync activa", "Datos remotos actualizados.");
   } catch (error) {
     console.error(error);
@@ -2045,6 +2085,19 @@ async function pushRemoteSnapshot() {
       `No pude guardar el estado remoto (${response.status}${errorText ? `: ${errorText}` : ""}).`,
     );
   }
+}
+
+async function prepareRemoteMutation() {
+  if (!remoteState.enabled || !remoteState.ready) {
+    return;
+  }
+
+  const staleForMs = Date.now() - (remoteState.lastSyncedAt || 0);
+  if (staleForMs < 1200) {
+    return;
+  }
+
+  await syncFromRemoteIfNeeded();
 }
 
 function buildRemoteHeaders() {
