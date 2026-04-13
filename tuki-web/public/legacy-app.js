@@ -1957,7 +1957,7 @@ function queueRemotePersist() {
 
 async function fetchRemoteSnapshot() {
   const rowId = encodeURIComponent(remoteConfig.stateRowId);
-  const url = `${remoteConfig.supabaseUrl}/rest/v1/app_state?id=eq.${rowId}&select=payload&_=${Date.now()}`;
+  const url = `${remoteConfig.supabaseUrl}/rest/v1/app_state?id=eq.${rowId}&select=payload`;
   let lastError = null;
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
