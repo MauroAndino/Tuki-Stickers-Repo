@@ -161,6 +161,7 @@ const remoteState = {
   pollTimer: null,
   syncing: false,
   lastSyncedAt: 0,
+  channel: null,
 };
 const scannerState = {
   stream: null,
@@ -1047,6 +1048,8 @@ async function confirmScannerSale() {
     return;
   }
 
+  const totalItems = scannerState.cart.reduce((sum, item) => sum + item.quantity, 0);
+
   for (const item of scannerState.cart) {
     const product = findProduct(item.sku);
     const success = await registerSale({
@@ -1067,6 +1070,7 @@ async function confirmScannerSale() {
   scannerState.cart = [];
   setScannerLastRead("", null, "Venta confirmada y stock actualizado.");
   render();
+  showToast(`Venta confirmada: ${totalItems} sticker${totalItems === 1 ? "" : "s"}`);
 }
 
 async function registerSale({ sku, channel, quantity, unitPrice, reference, date, notes }) {
@@ -1921,6 +1925,7 @@ async function initRemoteSync() {
     remoteState.lastError = "";
     remoteState.lastSyncedAt = Date.now();
     setSyncStatus("Sync activa", "Compu y celu comparten los mismos datos.");
+    startRealtimeSync();
     startRemotePolling();
   } catch (error) {
     console.error(error);
@@ -1950,7 +1955,7 @@ function startRemotePolling() {
     }
   });
 
-  remoteState.pollTimer = window.setInterval(syncFromRemoteIfNeeded, 1000);
+  remoteState.pollTimer = window.setInterval(syncFromRemoteIfNeeded, 5000);
 }
 
 async function queueRemotePersist(options = {}) {
@@ -2085,6 +2090,38 @@ async function pushRemoteSnapshot() {
       `No pude guardar el estado remoto (${response.status}${errorText ? `: ${errorText}` : ""}).`,
     );
   }
+}
+
+function startRealtimeSync() {
+  const client = window.TUKI_SUPABASE_CLIENT;
+  if (!remoteState.enabled || !client) {
+    return;
+  }
+
+  if (remoteState.channel) {
+    client.removeChannel(remoteState.channel);
+    remoteState.channel = null;
+  }
+
+  remoteState.channel = client
+    .channel(`tuki-state-${remoteConfig.stateRowId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "app_state",
+        filter: `id=eq.${remoteConfig.stateRowId}`,
+      },
+      async () => {
+        await syncFromRemoteIfNeeded(true);
+      },
+    )
+    .subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        setSyncStatus("Sync activa", "Realtime conectado entre compu y celu.");
+      }
+    });
 }
 
 async function prepareRemoteMutation() {

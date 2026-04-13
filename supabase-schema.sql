@@ -24,3 +24,5 @@ for update
 to anon
 using (true)
 with check (true);
+
+alter publication supabase_realtime add table public.app_state;
