@@ -159,6 +159,7 @@ const remoteState = {
   saveTimer: null,
   lastError: "",
   pollTimer: null,
+  syncing: false,
 };
 const scannerState = {
   stream: null,
@@ -1916,14 +1917,18 @@ function startRemotePolling() {
   }
 
   window.addEventListener("focus", syncFromRemoteIfNeeded);
-  window.addEventListener("pageshow", syncFromRemoteIfNeeded);
+  window.addEventListener("pageshow", () => {
+    syncFromRemoteIfNeeded();
+    window.setTimeout(syncFromRemoteIfNeeded, 250);
+  });
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
       syncFromRemoteIfNeeded();
+      window.setTimeout(syncFromRemoteIfNeeded, 250);
     }
   });
 
-  remoteState.pollTimer = window.setInterval(syncFromRemoteIfNeeded, 2500);
+  remoteState.pollTimer = window.setInterval(syncFromRemoteIfNeeded, 1000);
 }
 
 function queueRemotePersist() {
@@ -1953,8 +1958,9 @@ function queueRemotePersist() {
 async function fetchRemoteSnapshot() {
   const rowId = encodeURIComponent(remoteConfig.stateRowId);
   const response = await fetch(
-    `${remoteConfig.supabaseUrl}/rest/v1/app_state?id=eq.${rowId}&select=payload`,
+    `${remoteConfig.supabaseUrl}/rest/v1/app_state?id=eq.${rowId}&select=payload&_=${Date.now()}`,
     {
+      cache: "no-store",
       headers: buildRemoteHeaders(),
     },
   );
@@ -1968,13 +1974,16 @@ async function fetchRemoteSnapshot() {
 }
 
 async function syncFromRemoteIfNeeded() {
-  if (!remoteState.enabled || !remoteState.ready) {
+  if (!remoteState.enabled || !remoteState.ready || remoteState.syncing) {
     return;
   }
+
+  remoteState.syncing = true;
 
   try {
     const remoteSnapshot = await fetchRemoteSnapshot();
     if (!remoteSnapshot) {
+      remoteState.syncing = false;
       return;
     }
 
@@ -1991,6 +2000,8 @@ async function syncFromRemoteIfNeeded() {
     console.error(error);
     remoteState.lastError = error?.message || "No pude actualizar datos remotos.";
     setSyncStatus("Modo local", remoteState.lastError);
+  } finally {
+    remoteState.syncing = false;
   }
 }
 
@@ -1999,10 +2010,13 @@ async function pushRemoteSnapshot() {
     `${remoteConfig.supabaseUrl}/rest/v1/app_state?on_conflict=id`,
     {
       method: "POST",
+      cache: "no-store",
       headers: {
         ...buildRemoteHeaders(),
         "Content-Type": "application/json",
         Prefer: "resolution=merge-duplicates,return=representation",
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
       },
       body: JSON.stringify([
         {
@@ -2023,6 +2037,8 @@ function buildRemoteHeaders() {
   return {
     apikey: remoteConfig.supabaseAnonKey,
     Authorization: `Bearer ${remoteConfig.supabaseAnonKey}`,
+    "Cache-Control": "no-cache",
+    Pragma: "no-cache",
   };
 }
 
