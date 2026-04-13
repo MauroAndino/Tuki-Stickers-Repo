@@ -2090,6 +2090,20 @@ async function pushRemoteSnapshot() {
       `No pude guardar el estado remoto (${response.status}${errorText ? `: ${errorText}` : ""}).`,
     );
   }
+
+  if (remoteState.channel) {
+    try {
+      await remoteState.channel.send({
+        type: "broadcast",
+        event: "state-sync",
+        payload: {
+          state: cloneData(state),
+        },
+      });
+    } catch (error) {
+      console.error("No pude emitir el broadcast realtime", error);
+    }
+  }
 }
 
 function startRealtimeSync() {
@@ -2108,7 +2122,25 @@ function startRealtimeSync() {
   }
 
   remoteState.channel = client
-    .channel(`tuki-state-${remoteConfig.stateRowId}`)
+    .channel(`tuki-state-${remoteConfig.stateRowId}`, {
+      config: {
+        broadcast: {
+          ack: true,
+          self: true,
+        },
+      },
+    })
+    .on("broadcast", { event: "state-sync" }, ({ payload }) => {
+      const nextPayload = payload?.state;
+      if (!nextPayload?.updatedAt || nextPayload.updatedAt === state.updatedAt) {
+        return;
+      }
+
+      applyStateSnapshot(nextPayload);
+      render();
+      remoteState.lastSyncedAt = Date.now();
+      setSyncStatus("Sync activa", "Cambio recibido al instante.");
+    })
     .on(
       "postgres_changes",
       {
