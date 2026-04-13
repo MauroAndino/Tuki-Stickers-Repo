@@ -578,11 +578,12 @@ async function handleProductSubmit(event) {
   await persistState({ immediateRemote: true });
   if (product.image) {
     await syncProductImageToRemote(product.sku, product.image);
+    setProductImageLocally(product.sku, product.image);
   }
+  render();
   showToast(`Modelo ingresado: ${product.name}`);
   formElement.reset();
   setTodayDefaults();
-  render();
 }
 
 async function handleThemeSubmit(event) {
@@ -2215,6 +2216,17 @@ async function syncAllImagesToRemote() {
   }
 }
 
+function setProductImageLocally(sku, image) {
+  const normalizedSku = sanitizeSku(sku);
+  const product = state.products.find((item) => sanitizeSku(item.sku) === normalizedSku);
+  if (!product) {
+    return;
+  }
+
+  product.image = image || "";
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
 function startRealtimeSync() {
   const client = window.TUKI_SUPABASE_CLIENT;
   if (!remoteState.enabled || !client) {
@@ -2588,6 +2600,7 @@ async function handleProductDetailSubmit(event) {
 
   await persistState({ immediateRemote: true });
   await syncProductImageToRemote(updatedSku, product.image, originalSku);
+  setProductImageLocally(updatedSku, product.image);
   render();
   openProductDetail(updatedSku);
   showToast(`Modelo actualizado: ${product.name}`);
