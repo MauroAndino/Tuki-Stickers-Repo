@@ -462,10 +462,35 @@
           <section id="sales-history" class="tab-panel" data-tab-group="sales">
             <section class="panel">
               <div class="panel-header">
-                <h3>Ultimas ventas</h3>
+                <h3>Registro de ventas</h3>
                 <span id="sales-count" class="hint">0 movimientos</span>
               </div>
-              <div id="sales-list" class="list-card empty-state-inline"></div>
+
+              <div class="filter-grid sales-filters">
+                <label>
+                  Buscar
+                  <input id="sales-search" placeholder="SKU, nombre o notas" />
+                </label>
+                <label>
+                  Canal
+                  <select id="sales-channel-filter">
+                    <option value="all">Todos</option>
+                    <option value="Feria">Feria</option>
+                    <option value="Local">Local amigo</option>
+                    <option value="Online">Online</option>
+                  </select>
+                </label>
+                <label>
+                  Desde
+                  <input id="sales-date-from" type="date" />
+                </label>
+                <label>
+                  Hasta
+                  <input id="sales-date-to" type="date" />
+                </label>
+              </div>
+
+              <div id="sales-list" class="table-shell empty-state-inline"></div>
             </section>
           </section>
         </section>

@@ -299,7 +299,8 @@ select:focus {
 .chart-list,
 .list-card,
 .assistant-report,
-.catalog-grid {
+.catalog-grid,
+.table-shell {
   display: grid;
   gap: 12px;
 }
@@ -672,6 +673,43 @@ select:focus {
   gap: 10px;
 }
 
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid rgba(216, 204, 187, 0.75);
+  border-radius: 18px;
+  background: white;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid rgba(216, 204, 187, 0.55);
+  font-size: 0.95rem;
+}
+
+.data-table th {
+  background: #fff5ec;
+  color: var(--accent-strong);
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(255, 217, 200, 0.22);
+}
+
+.sales-filters {
+  margin-bottom: 14px;
+}
+
 @media (max-width: 1200px) {
   .catalog-grid,
   .magazine-grid,
@@ -688,15 +726,31 @@ select:focus {
   }
 
   .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
     border-right: none;
     border-bottom: 1px solid rgba(29, 29, 29, 0.08);
+    padding: 18px;
+    gap: 16px;
+  }
+
+  .nav {
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .nav-link {
+    white-space: nowrap;
   }
 }
 
 @media (max-width: 720px) {
   .main-content,
   .sidebar {
-    padding: 18px;
+    padding: 14px;
   }
 
   .form-grid,
@@ -714,6 +768,37 @@ select:focus {
     grid-template-columns: 1fr;
   }
 
+  .section-header,
+  .panel-header {
+    gap: 10px;
+  }
+
+  .panel,
+  .stat-card {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .section-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .section-tab {
+    white-space: nowrap;
+  }
+
+  .gallery-toolbar,
+  .sales-filters {
+    gap: 10px;
+  }
+
+  .magazine-card img,
+  .magazine-card .catalog-image-placeholder {
+    height: 190px;
+  }
+
   .scanner-cart-controls,
   .scanner-quantity-field {
     justify-items: start;
@@ -725,5 +810,19 @@ select:focus {
 
   .modal-layout {
     grid-template-columns: 1fr;
+  }
+
+  .modal-card {
+    padding: 16px;
+    max-height: calc(100vh - 20px);
+  }
+
+  .primary-button,
+  .secondary-button,
+  .ghost-button,
+  .quick-sale-button,
+  .nav-link,
+  .section-tab {
+    min-height: 46px;
   }
 }

@@ -249,6 +249,10 @@ const els = {
   restockMaterial: document.getElementById("restock-material"),
   catalogCount: document.getElementById("catalog-count"),
   salesCount: document.getElementById("sales-count"),
+  salesSearch: document.getElementById("sales-search"),
+  salesChannelFilter: document.getElementById("sales-channel-filter"),
+  salesDateFrom: document.getElementById("sales-date-from"),
+  salesDateTo: document.getElementById("sales-date-to"),
   restockCount: document.getElementById("restock-count"),
   lastUpdated: document.getElementById("last-updated"),
   syncStatus: document.getElementById("sync-status"),
@@ -355,6 +359,10 @@ function bindEvents() {
     els.quickSaleQuantity,
     els.quickSaleChannel,
     els.saleSku,
+    els.salesSearch,
+    els.salesChannelFilter,
+    els.salesDateFrom,
+    els.salesDateTo,
   ].forEach((element) => {
     element.addEventListener("input", render);
     element.addEventListener("change", render);
@@ -1339,31 +1347,65 @@ function renderScanner() {
 }
 
 function renderSales() {
-  els.salesCount.textContent = `${state.sales.length} movimientos`;
+  const search = normalizeText(els.salesSearch.value);
+  const channel = els.salesChannelFilter.value;
+  const dateFrom = els.salesDateFrom.value;
+  const dateTo = els.salesDateTo.value;
 
-  if (!state.sales.length) {
+  const filteredSales = state.sales.filter((sale) => {
+    const product = findProduct(sale.sku);
+    const haystack = normalizeText(`${sale.sku} ${product?.name || ""} ${sale.notes || ""}`);
+    const matchesSearch = !search || haystack.includes(search);
+    const matchesChannel = channel === "all" || sale.channel === channel;
+    const matchesFrom = !dateFrom || sale.date >= dateFrom;
+    const matchesTo = !dateTo || sale.date <= dateTo;
+    return matchesSearch && matchesChannel && matchesFrom && matchesTo;
+  });
+
+  els.salesCount.textContent = `${filteredSales.length} movimientos`;
+
+  if (!filteredSales.length) {
     els.salesList.innerHTML = "<p>No hay ventas registradas todavia.</p>";
     return;
   }
 
-  els.salesList.innerHTML = state.sales
-    .slice(0, 10)
+  els.salesList.innerHTML = `
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Modelo</th>
+            <th>SKU</th>
+            <th>Canal</th>
+            <th>Unidad</th>
+            <th>Precio</th>
+            <th>Total</th>
+            <th>Notas</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filteredSales
     .map((sale) => {
       const product = findProduct(sale.sku);
       return `
-        <article class="list-item">
-          <div>
-            <strong>${product ? product.name : sale.sku}</strong>
-            <div class="hint">${sale.channel}</div>
-          </div>
-          <div>
-            <span class="status-tag good">${sale.quantity} unidades</span>
-            <div class="hint">${formatDate(sale.date)} - ${formatCurrency(sale.unitPrice)}</div>
-          </div>
-        </article>
+        <tr>
+          <td>${formatDate(sale.date)}</td>
+          <td>${product ? product.name : "Modelo eliminado"}</td>
+          <td>${sale.sku}</td>
+          <td>${sale.channel}</td>
+          <td>${sale.quantity}</td>
+          <td>${formatCurrency(sale.unitPrice)}</td>
+          <td>${formatCurrency((sale.unitPrice || 0) * (sale.quantity || 0))}</td>
+          <td>${sale.notes || "-"}</td>
+        </tr>
       `;
     })
-    .join("");
+    .join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
 }
 
 function renderRestocks() {
