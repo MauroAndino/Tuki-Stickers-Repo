@@ -1,0 +1,11 @@
+{
+  "name": "TUKI! STICKERS MVP",
+  "short_name": "TUKI",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5efe4",
+  "theme_color": "#eb5e28",
+  "description": "MVP para catalogo, stock, ventas y escaneo de stickers.",
+  "lang": "es-AR"
+}
