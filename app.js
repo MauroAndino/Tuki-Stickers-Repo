@@ -158,6 +158,7 @@ const remoteState = {
   ready: false,
   saveTimer: null,
   lastError: "",
+  pollTimer: null,
 };
 const scannerState = {
   stream: null,
@@ -1853,11 +1854,31 @@ async function initRemoteSync() {
     remoteState.ready = true;
     remoteState.lastError = "";
     setSyncStatus("Sync activa", "Compu y celu comparten los mismos datos.");
+    startRemotePolling();
   } catch (error) {
     console.error(error);
     remoteState.lastError = error?.message || "No pude conectar con la base remota.";
     setSyncStatus("Modo local", remoteState.lastError);
   }
+}
+
+function startRemotePolling() {
+  if (!remoteState.enabled) {
+    return;
+  }
+
+  if (remoteState.pollTimer) {
+    window.clearInterval(remoteState.pollTimer);
+  }
+
+  window.addEventListener("focus", syncFromRemoteIfNeeded);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      syncFromRemoteIfNeeded();
+    }
+  });
+
+  remoteState.pollTimer = window.setInterval(syncFromRemoteIfNeeded, 8000);
 }
 
 function queueRemotePersist() {
@@ -1873,6 +1894,8 @@ function queueRemotePersist() {
   remoteState.saveTimer = window.setTimeout(async () => {
     try {
       await pushRemoteSnapshot();
+      state.updatedAt = new Date().toISOString();
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       setSyncStatus("Sync activa", "Cambios guardados en compu y celu.");
     } catch (error) {
       console.error(error);
@@ -1897,6 +1920,33 @@ async function fetchRemoteSnapshot() {
 
   const rows = await response.json();
   return rows[0]?.payload || null;
+}
+
+async function syncFromRemoteIfNeeded() {
+  if (!remoteState.enabled || !remoteState.ready) {
+    return;
+  }
+
+  try {
+    const remoteSnapshot = await fetchRemoteSnapshot();
+    if (!remoteSnapshot) {
+      return;
+    }
+
+    const remoteUpdatedAt = remoteSnapshot.updatedAt || "";
+    const localUpdatedAt = state.updatedAt || "";
+    if (remoteUpdatedAt && remoteUpdatedAt === localUpdatedAt) {
+      return;
+    }
+
+    applyStateSnapshot(remoteSnapshot);
+    render();
+    setSyncStatus("Sync activa", "Datos remotos actualizados.");
+  } catch (error) {
+    console.error(error);
+    remoteState.lastError = error?.message || "No pude actualizar datos remotos.";
+    setSyncStatus("Modo local", remoteState.lastError);
+  }
 }
 
 async function pushRemoteSnapshot() {
