@@ -2065,6 +2065,7 @@ async function syncFromRemoteIfNeeded() {
 }
 
 async function pushRemoteSnapshot() {
+  const remoteSnapshot = buildRemoteSnapshot();
   const response = await fetch(`${remoteConfig.supabaseUrl}/rest/v1/app_state?on_conflict=id`, {
     method: "POST",
     cache: "no-store",
@@ -2078,7 +2079,7 @@ async function pushRemoteSnapshot() {
     body: JSON.stringify([
       {
         id: remoteConfig.stateRowId,
-        payload: cloneData(state),
+        payload: remoteSnapshot,
         updated_at: new Date().toISOString(),
       },
     ]),
@@ -2097,7 +2098,7 @@ async function pushRemoteSnapshot() {
         type: "broadcast",
         event: "state-sync",
         payload: {
-          state: cloneData(state),
+          state: remoteSnapshot,
         },
       });
     } catch (error) {
@@ -2196,6 +2197,19 @@ function buildRemoteHeaders() {
     Authorization: `Bearer ${remoteConfig.supabaseAnonKey}`,
     "Cache-Control": "no-cache",
     Pragma: "no-cache",
+  };
+}
+
+function buildRemoteSnapshot() {
+  return {
+    products: state.products.map((product) => ({
+      ...product,
+      image: "",
+    })),
+    themes: cloneData(state.themes),
+    sales: cloneData(state.sales),
+    restocks: cloneData(state.restocks),
+    updatedAt: state.updatedAt,
   };
 }
 
