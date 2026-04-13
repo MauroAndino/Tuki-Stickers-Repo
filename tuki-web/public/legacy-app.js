@@ -1957,20 +1957,34 @@ function queueRemotePersist() {
 
 async function fetchRemoteSnapshot() {
   const rowId = encodeURIComponent(remoteConfig.stateRowId);
-  const response = await fetch(
-    `${remoteConfig.supabaseUrl}/rest/v1/app_state?id=eq.${rowId}&select=payload&_=${Date.now()}`,
-    {
-      cache: "no-store",
-      headers: buildRemoteHeaders(),
-    },
-  );
+  const url = `${remoteConfig.supabaseUrl}/rest/v1/app_state?id=eq.${rowId}&select=payload&_=${Date.now()}`;
+  let lastError = null;
 
-  if (!response.ok) {
-    throw new Error("No pude leer el estado remoto.");
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const response = await fetch(url, {
+        cache: "no-store",
+        headers: buildRemoteHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => "");
+        throw new Error(
+          `No pude leer el estado remoto (${response.status}${errorText ? `: ${errorText}` : ""}).`,
+        );
+      }
+
+      const rows = await response.json();
+      return rows[0]?.payload || null;
+    } catch (error) {
+      lastError = error;
+      if (attempt < 2) {
+        await wait(350 * (attempt + 1));
+      }
+    }
   }
 
-  const rows = await response.json();
-  return rows[0]?.payload || null;
+  throw lastError || new Error("No pude leer el estado remoto.");
 }
 
 async function syncFromRemoteIfNeeded() {
@@ -2006,30 +2020,30 @@ async function syncFromRemoteIfNeeded() {
 }
 
 async function pushRemoteSnapshot() {
-  const response = await fetch(
-    `${remoteConfig.supabaseUrl}/rest/v1/app_state?on_conflict=id`,
-    {
-      method: "POST",
-      cache: "no-store",
-      headers: {
-        ...buildRemoteHeaders(),
-        "Content-Type": "application/json",
-        Prefer: "resolution=merge-duplicates,return=representation",
-        "Cache-Control": "no-cache",
-        Pragma: "no-cache",
-      },
-      body: JSON.stringify([
-        {
-          id: remoteConfig.stateRowId,
-          payload: cloneData(state),
-          updated_at: new Date().toISOString(),
-        },
-      ]),
+  const response = await fetch(`${remoteConfig.supabaseUrl}/rest/v1/app_state?on_conflict=id`, {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      ...buildRemoteHeaders(),
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=representation",
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
     },
-  );
+    body: JSON.stringify([
+      {
+        id: remoteConfig.stateRowId,
+        payload: cloneData(state),
+        updated_at: new Date().toISOString(),
+      },
+    ]),
+  });
 
   if (!response.ok) {
-    throw new Error("No pude guardar el estado remoto.");
+    const errorText = await response.text().catch(() => "");
+    throw new Error(
+      `No pude guardar el estado remoto (${response.status}${errorText ? `: ${errorText}` : ""}).`,
+    );
   }
 }
 
@@ -2404,6 +2418,10 @@ function readFileAsDataUrl(file) {
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(file);
   });
+}
+
+function wait(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 function registerServiceWorker() {
