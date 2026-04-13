@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   const mountRef = useRef<HTMLDivElement>(null);
   const [shellReady, setShellReady] = useState(false);
