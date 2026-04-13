@@ -444,7 +444,7 @@ function applyNavigationHref(href) {
 
 function hydrateLegacyState() {
   state.products = (state.products || []).map((product) => ({
-    image: "",
+    image: product.image || "",
     createdAt: product.createdAt || todayString(),
     lastRestockAt: product.lastRestockAt || product.createdAt || todayString(),
     character: product.character === "No" ? "No" : "Si",
@@ -576,6 +576,9 @@ async function handleProductSubmit(event) {
   }
 
   await persistState({ immediateRemote: true });
+  if (product.image) {
+    await syncProductImageToRemote(product.sku, product.image);
+  }
   showToast(`Modelo ingresado: ${product.name}`);
   formElement.reset();
   setTodayDefaults();
@@ -1917,8 +1920,10 @@ async function initRemoteSync() {
     const remoteSnapshot = await fetchRemoteSnapshot();
     if (remoteSnapshot) {
       applyStateSnapshot(remoteSnapshot);
+      await fetchAndApplyRemoteImages();
     } else {
       await pushRemoteSnapshot();
+      await syncAllImagesToRemote();
     }
 
     remoteState.ready = true;
@@ -2052,6 +2057,7 @@ async function syncFromRemoteIfNeeded() {
     }
 
     applyStateSnapshot(remoteSnapshot);
+    await fetchAndApplyRemoteImages();
     render();
     remoteState.lastSyncedAt = Date.now();
     setSyncStatus("Sync activa", "Datos remotos actualizados.");
@@ -2107,6 +2113,108 @@ async function pushRemoteSnapshot() {
   }
 }
 
+async function fetchAndApplyRemoteImages() {
+  if (!remoteState.enabled) {
+    return;
+  }
+
+  const response = await fetch(`${remoteConfig.supabaseUrl}/rest/v1/product_images?select=sku,image`, {
+    cache: "no-store",
+    headers: buildRemoteHeaders(),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    throw new Error(
+      `No pude leer las imagenes remotas (${response.status}${errorText ? `: ${errorText}` : ""}).`,
+    );
+  }
+
+  const rows = await response.json();
+  const imagesBySku = new Map(
+    rows.map((row) => [sanitizeSku(row.sku), row.image || ""]),
+  );
+
+  state.products = state.products.map((product) => ({
+    ...product,
+    image: imagesBySku.get(sanitizeSku(product.sku)) || "",
+  }));
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+async function syncProductImageToRemote(sku, image, previousSku = "") {
+  if (!remoteState.enabled) {
+    return;
+  }
+
+  const normalizedSku = sanitizeSku(sku);
+  const normalizedPreviousSku = sanitizeSku(previousSku);
+
+  if (normalizedPreviousSku && normalizedPreviousSku !== normalizedSku) {
+    await deleteRemoteProductImage(normalizedPreviousSku);
+  }
+
+  if (!image) {
+    await deleteRemoteProductImage(normalizedSku);
+    return;
+  }
+
+  const response = await fetch(`${remoteConfig.supabaseUrl}/rest/v1/product_images?on_conflict=sku`, {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      ...buildRemoteHeaders(),
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=representation",
+    },
+    body: JSON.stringify([
+      {
+        sku: normalizedSku,
+        image,
+        updated_at: new Date().toISOString(),
+      },
+    ]),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    throw new Error(
+      `No pude guardar la imagen remota (${response.status}${errorText ? `: ${errorText}` : ""}).`,
+    );
+  }
+}
+
+async function deleteRemoteProductImage(sku) {
+  if (!remoteState.enabled || !sku) {
+    return;
+  }
+
+  const normalizedSku = sanitizeSku(sku);
+  const response = await fetch(
+    `${remoteConfig.supabaseUrl}/rest/v1/product_images?sku=eq.${encodeURIComponent(normalizedSku)}`,
+    {
+      method: "DELETE",
+      cache: "no-store",
+      headers: buildRemoteHeaders(),
+    },
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    throw new Error(
+      `No pude borrar la imagen remota (${response.status}${errorText ? `: ${errorText}` : ""}).`,
+    );
+  }
+}
+
+async function syncAllImagesToRemote() {
+  for (const product of state.products) {
+    if (product.image) {
+      await syncProductImageToRemote(product.sku, product.image);
+    }
+  }
+}
+
 function startRealtimeSync() {
   const client = window.TUKI_SUPABASE_CLIENT;
   if (!remoteState.enabled || !client) {
@@ -2132,15 +2240,18 @@ function startRealtimeSync() {
       },
     })
     .on("broadcast", { event: "state-sync" }, ({ payload }) => {
+      Promise.resolve().then(async () => {
       const nextPayload = payload?.state;
       if (!nextPayload?.updatedAt || nextPayload.updatedAt === state.updatedAt) {
         return;
       }
 
       applyStateSnapshot(nextPayload);
+      await fetchAndApplyRemoteImages();
       render();
       remoteState.lastSyncedAt = Date.now();
       setSyncStatus("Sync activa", "Cambio recibido al instante.");
+      });
     })
     .on(
       "postgres_changes",
@@ -2158,6 +2269,7 @@ function startRealtimeSync() {
 
         if (nextPayload) {
           applyStateSnapshot(nextPayload);
+          await fetchAndApplyRemoteImages();
           render();
           remoteState.lastSyncedAt = Date.now();
           setSyncStatus("Sync activa", "Realtime recibio cambios al instante.");
@@ -2407,6 +2519,7 @@ function handleProductDelete() {
   }
 
   persistState();
+  deleteRemoteProductImage(originalSku).catch(console.error);
   closeProductDetailModal();
   render();
   showToast(`Modelo eliminado: ${product.name}`);
@@ -2473,7 +2586,8 @@ async function handleProductDetailSubmit(event) {
     state.themes.sort((a, b) => a.localeCompare(b));
   }
 
-  persistState();
+  await persistState({ immediateRemote: true });
+  await syncProductImageToRemote(updatedSku, product.image, originalSku);
   render();
   openProductDetail(updatedSku);
   showToast(`Modelo actualizado: ${product.name}`);
