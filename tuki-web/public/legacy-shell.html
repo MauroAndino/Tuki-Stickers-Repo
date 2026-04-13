@@ -20,7 +20,9 @@
           <h2>Estado</h2>
           <p id="last-updated">Sin cambios guardados todavia.</p>
           <p id="sync-status" class="hint">Modo local. Sin sincronizacion remota.</p>
+          <p id="network-status" class="hint">Estado de red: verificando...</p>
           <div class="action-stack">
+            <button id="sync-now-button" class="primary-button">Sincronizar ahora</button>
             <button id="export-button" class="secondary-button">Exportar respaldo</button>
             <button id="import-button" class="secondary-button">Importar respaldo</button>
             <button id="seed-button" class="secondary-button">Cargar demo</button>
@@ -399,6 +401,7 @@
                 <div id="scanner-cart" class="list-card empty-state-inline"></div>
 
                 <div class="scanner-actions footer-actions">
+                  <button id="undo-last-scan" type="button" class="secondary-button">Deshacer ultimo</button>
                   <button id="clear-scanner-cart" type="button" class="ghost-button">Vaciar</button>
                   <button id="confirm-scanner-sale" type="button" class="primary-button">Confirmar venta</button>
                 </div>

@@ -259,6 +259,7 @@ const els = {
   restockCount: document.getElementById("restock-count"),
   lastUpdated: document.getElementById("last-updated"),
   syncStatus: document.getElementById("sync-status"),
+  networkStatus: document.getElementById("network-status"),
   statTotalStock: document.getElementById("stat-total-stock"),
   statActiveProducts: document.getElementById("stat-active-products"),
   statTotalSales: document.getElementById("stat-total-sales"),
@@ -268,6 +269,7 @@ const els = {
   exportButton: document.getElementById("export-button"),
   importButton: document.getElementById("import-button"),
   importFile: document.getElementById("import-file"),
+  syncNowButton: document.getElementById("sync-now-button"),
   toast: document.getElementById("toast"),
   runtimeError: document.getElementById("runtime-error"),
   productDetailModal: document.getElementById("product-detail-modal"),
@@ -281,6 +283,7 @@ const els = {
   productDetailForm: document.getElementById("product-detail-form"),
   productDetailTheme: document.getElementById("product-detail-theme"),
   productDetailMaterial: document.getElementById("product-detail-material"),
+  undoLastScan: document.getElementById("undo-last-scan"),
 };
 
 init().catch((error) => {
@@ -301,6 +304,7 @@ async function init() {
   }
   syncNavigationFromHash();
   await initRemoteSync();
+  updateNetworkStatus();
   render();
 }
 
@@ -350,7 +354,11 @@ function bindEvents() {
   els.exportButton.addEventListener("click", exportBackup);
   els.importButton.addEventListener("click", () => els.importFile.click());
   els.importFile.addEventListener("change", importBackup);
+  els.syncNowButton.addEventListener("click", handleManualSync);
   els.quickSaleGrid.addEventListener("click", handleQuickSaleClick);
+  els.undoLastScan.addEventListener("click", undoLastScannerItem);
+  window.addEventListener("online", updateNetworkStatus);
+  window.addEventListener("offline", updateNetworkStatus);
 
   [
     els.catalogSearch,
@@ -867,6 +875,7 @@ function processDetectedCode(rawValue) {
     return;
   }
 
+  pulseScannerFeedback();
   setScannerLastRead(code, product, "Sticker agregado a la venta.");
 }
 
@@ -897,6 +906,23 @@ function addScannerItem(sku) {
 
 function clearScannerCart() {
   scannerState.cart = [];
+  renderScanner();
+}
+
+function undoLastScannerItem() {
+  if (!scannerState.cart.length) {
+    showToast("No hay escaneos para deshacer.");
+    return;
+  }
+
+  const lastItem = scannerState.cart[scannerState.cart.length - 1];
+  if (lastItem.quantity > 1) {
+    lastItem.quantity -= 1;
+  } else {
+    scannerState.cart.pop();
+  }
+
+  setScannerLastRead(lastItem.sku, findProduct(lastItem.sku), "Ultimo escaneo deshecho.");
   renderScanner();
 }
 
@@ -2315,6 +2341,17 @@ async function prepareRemoteMutation() {
   await syncFromRemoteIfNeeded();
 }
 
+async function handleManualSync() {
+  if (!remoteState.enabled || !remoteState.ready) {
+    showToast("La sincronizacion remota no esta disponible.");
+    return;
+  }
+
+  setSyncStatus("Sincronizando", "Actualizando datos manualmente...");
+  await syncFromRemoteIfNeeded();
+  showToast("Sincronizacion completada.");
+}
+
 function buildRemoteHeaders() {
   return {
     apikey: remoteConfig.supabaseAnonKey,
@@ -2354,6 +2391,16 @@ function setSyncStatus(title, detail) {
   }
 
   els.syncStatus.textContent = `${title}. ${detail}`;
+}
+
+function updateNetworkStatus() {
+  if (!els.networkStatus) {
+    return;
+  }
+
+  els.networkStatus.textContent = navigator.onLine
+    ? "Estado de red: online"
+    : "Estado de red: offline";
 }
 
 function seedDemoData() {
@@ -2451,6 +2498,38 @@ function showToast(message) {
       }, 180);
     }, 2400);
   });
+}
+
+function pulseScannerFeedback() {
+  if (navigator.vibrate) {
+    navigator.vibrate(35);
+  }
+
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) {
+      return;
+    }
+
+    const audioContext = new AudioContextClass();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = "sine";
+    oscillator.frequency.value = 880;
+    gain.gain.value = 0.02;
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.06);
+    oscillator.onended = () => {
+      audioContext.close().catch(() => {});
+    };
+  } catch (error) {
+    console.error("No pude reproducir feedback de escaneo", error);
+  }
 }
 
 function handleCatalogGalleryClick(event) {
