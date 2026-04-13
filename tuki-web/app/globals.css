@@ -36,7 +36,7 @@ body {
     radial-gradient(circle at top right, rgba(250, 228, 193, 0.55), transparent 28%),
     linear-gradient(180deg, #fcfaf6 0%, var(--bg) 100%);
   color: var(--text);
-  font-family: var(--font-manrope), sans-serif;
+  font-family: "Aptos", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
 button,
