@@ -1955,7 +1955,7 @@ function startRemotePolling() {
     }
   });
 
-  remoteState.pollTimer = window.setInterval(syncFromRemoteIfNeeded, 5000);
+  remoteState.pollTimer = window.setInterval(syncFromRemoteIfNeeded, 15000);
 }
 
 async function queueRemotePersist(options = {}) {
@@ -2098,6 +2098,10 @@ function startRealtimeSync() {
     return;
   }
 
+  if (client.realtime && typeof client.realtime.setAuth === "function") {
+    client.realtime.setAuth(remoteConfig.supabaseAnonKey);
+  }
+
   if (remoteState.channel) {
     client.removeChannel(remoteState.channel);
     remoteState.channel = null;
@@ -2113,13 +2117,30 @@ function startRealtimeSync() {
         table: "app_state",
         filter: `id=eq.${remoteConfig.stateRowId}`,
       },
-      async () => {
-        await syncFromRemoteIfNeeded(true);
+      async (payload) => {
+        const nextPayload = payload?.new?.payload;
+        if (nextPayload?.updatedAt && nextPayload.updatedAt === state.updatedAt) {
+          return;
+        }
+
+        if (nextPayload) {
+          applyStateSnapshot(nextPayload);
+          render();
+          remoteState.lastSyncedAt = Date.now();
+          setSyncStatus("Sync activa", "Realtime recibio cambios al instante.");
+          return;
+        }
+
+        await syncFromRemoteIfNeeded();
       },
     )
     .subscribe((status) => {
       if (status === "SUBSCRIBED") {
         setSyncStatus("Sync activa", "Realtime conectado entre compu y celu.");
+      } else if (status === "CHANNEL_ERROR") {
+        setSyncStatus("Sync parcial", "Realtime fallo. Queda activo el polling.");
+      } else if (status === "TIMED_OUT") {
+        setSyncStatus("Sync parcial", "Realtime demorado. Queda activo el polling.");
       }
     });
 }
