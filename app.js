@@ -505,7 +505,8 @@ function activateSectionTab(group, tabId) {
 
 async function handleProductSubmit(event) {
   event.preventDefault();
-  const form = new FormData(event.currentTarget);
+  const formElement = event.currentTarget;
+  const form = new FormData(formElement);
   const imageFile = form.get("image");
   const image = imageFile && imageFile.size ? await readFileAsDataUrl(imageFile) : "";
   const normalizedSku = sanitizeSku(form.get("sku"));
@@ -559,14 +560,15 @@ async function handleProductSubmit(event) {
 
   persistState();
   showToast(`Modelo ingresado: ${product.name}`);
-  event.currentTarget.reset();
+  formElement.reset();
   setTodayDefaults();
   render();
 }
 
 function handleThemeSubmit(event) {
   event.preventDefault();
-  const form = new FormData(event.currentTarget);
+  const formElement = event.currentTarget;
+  const form = new FormData(formElement);
   const themeName = String(form.get("themeName")).trim();
 
   if (!themeName) {
@@ -581,14 +583,15 @@ function handleThemeSubmit(event) {
   state.themes.push(themeName);
   state.themes.sort((a, b) => a.localeCompare(b));
   persistState();
-  event.currentTarget.reset();
+  formElement.reset();
   render();
   showToast(`Tematica agregada: ${themeName}`);
 }
 
 function handleSaleSubmit(event) {
   event.preventDefault();
-  const form = new FormData(event.currentTarget);
+  const formElement = event.currentTarget;
+  const form = new FormData(formElement);
   const product = findProduct(String(form.get("sku")));
 
   registerSale({
@@ -601,7 +604,7 @@ function handleSaleSubmit(event) {
     notes: String(form.get("notes")).trim(),
   });
 
-  event.currentTarget.reset();
+  formElement.reset();
   setTodayDefaults();
   render();
   showToast("Venta registrada");
@@ -609,7 +612,8 @@ function handleSaleSubmit(event) {
 
 function handleRestockSubmit(event) {
   event.preventDefault();
-  const form = new FormData(event.currentTarget);
+  const formElement = event.currentTarget;
+  const form = new FormData(formElement);
   const sku = String(form.get("sku"));
   const quantity = Number(form.get("quantity") || 0);
   const product = findProduct(sku);
@@ -639,7 +643,7 @@ function handleRestockSubmit(event) {
   });
 
   persistState();
-  event.currentTarget.reset();
+  formElement.reset();
   setTodayDefaults();
   render();
   showToast(`Ingreso registrado para ${product.name}`);
@@ -2128,7 +2132,8 @@ function handleProductDelete() {
 
 async function handleProductDetailSubmit(event) {
   event.preventDefault();
-  const form = new FormData(event.currentTarget);
+  const formElement = event.currentTarget;
+  const form = new FormData(formElement);
   const originalSku = sanitizeSku(form.get("skuOriginal"));
   const updatedSku = sanitizeSku(form.get("sku"));
   const product = findProduct(originalSku);
