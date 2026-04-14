@@ -2,22 +2,27 @@
 
 :root {
   color-scheme: light;
-  --bg: #f6f1e8;
-  --surface: rgba(255, 255, 255, 0.78);
-  --surface-strong: #ffffff;
-  --surface-soft: #f7f4ee;
-  --line: rgba(78, 61, 41, 0.1);
-  --line-strong: rgba(78, 61, 41, 0.16);
-  --text: #23180d;
-  --muted: #76695b;
-  --accent: #ef6c2f;
-  --accent-soft: rgba(239, 108, 47, 0.12);
-  --success: #0f9f6e;
-  --success-soft: rgba(15, 159, 110, 0.1);
-  --warn: #c98822;
-  --warn-soft: rgba(201, 136, 34, 0.12);
-  --shadow-lg: 0 22px 50px rgba(54, 35, 15, 0.1);
-  --shadow-md: 0 12px 28px rgba(54, 35, 15, 0.08);
+  --bg: #f5f5f7;
+  --surface: rgba(255, 255, 255, 0.76);
+  --surface-strong: rgba(255, 255, 255, 0.96);
+  --surface-soft: #ffffff;
+  --line: rgba(29, 29, 31, 0.08);
+  --line-strong: rgba(29, 29, 31, 0.14);
+  --text: #1d1d1f;
+  --muted: #6e6e73;
+  --accent: #0a84ff;
+  --accent-soft: rgba(10, 132, 255, 0.12);
+  --success: #10b981;
+  --success-soft: rgba(16, 185, 129, 0.12);
+  --warn: #e0a106;
+  --warn-soft: rgba(224, 161, 6, 0.14);
+  --coral: #ff5f57;
+  --electric: #0a84ff;
+  --mustard: #f4b400;
+  --emerald: #10b981;
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 10px 40px rgba(0, 0, 0, 0.04);
+  --radius-xl: 32px;
 }
 
 * {
@@ -32,11 +37,12 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at top left, rgba(255, 206, 171, 0.4), transparent 32%),
-    radial-gradient(circle at top right, rgba(250, 228, 193, 0.55), transparent 28%),
-    linear-gradient(180deg, #fcfaf6 0%, var(--bg) 100%);
+    radial-gradient(circle at top left, rgba(10, 132, 255, 0.08), transparent 24%),
+    radial-gradient(circle at top right, rgba(16, 185, 129, 0.07), transparent 22%),
+    radial-gradient(circle at bottom right, rgba(255, 95, 87, 0.07), transparent 24%),
+    linear-gradient(180deg, #fbfbfc 0%, var(--bg) 100%);
   color: var(--text);
-  font-family: "Aptos", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 button,
@@ -59,8 +65,8 @@ img {
   display: grid;
   min-height: 100vh;
   grid-template-columns: 320px minmax(0, 1fr);
-  gap: 1.25rem;
-  padding: 1.25rem;
+  gap: 1.5rem;
+  padding: 1.5rem;
 }
 
 .mobile-nav-toggle,
@@ -89,11 +95,11 @@ img {
   height: calc(100vh - 2.5rem);
   flex-direction: column;
   gap: 1.1rem;
-  padding: 1.25rem;
+  padding: 1.4rem;
   border: 1px solid var(--line);
-  border-radius: 2rem;
-  background: rgba(255, 252, 247, 0.8);
-  backdrop-filter: blur(22px);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.74);
+  backdrop-filter: blur(24px);
   box-shadow: var(--shadow-md);
 }
 
@@ -116,7 +122,7 @@ img {
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: rgba(29, 29, 31, 0.5);
 }
 
 .sidebar-copy,
@@ -171,9 +177,9 @@ img {
 
 .nav-link.active {
   border-color: var(--line);
-  background: var(--surface-strong);
+  background: rgba(255, 255, 255, 0.88);
   color: var(--text);
-  box-shadow: 0 8px 22px rgba(45, 31, 14, 0.08);
+  box-shadow: var(--shadow-md);
 }
 
 .panel,
@@ -188,13 +194,13 @@ img {
 .modal-card {
   border: 1px solid var(--line);
   background: var(--surface);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
   box-shadow: var(--shadow-md);
 }
 
 .panel {
   padding: 1.25rem;
-  border-radius: 1.9rem;
+  border-radius: var(--radius-xl);
 }
 
 .section-header h2,
@@ -214,20 +220,20 @@ img {
 
 .primary-button {
   border: none;
-  background: linear-gradient(135deg, #1b130c 0%, #38291b 100%);
+  background: linear-gradient(135deg, #1d1d1f 0%, #3a3a3c 100%);
   color: white;
-  box-shadow: 0 14px 28px rgba(27, 19, 12, 0.18);
+  box-shadow: 0 10px 30px rgba(29, 29, 31, 0.14);
 }
 
 .secondary-button {
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.82);
   color: var(--text);
 }
 
 .ghost-button {
   border: 1px solid transparent;
-  background: rgba(118, 105, 91, 0.08);
+  background: rgba(29, 29, 31, 0.06);
   color: var(--muted);
 }
 
@@ -271,7 +277,7 @@ img {
 
 .section-header h2 {
   font-size: clamp(2rem, 4vw, 2.8rem);
-  line-height: 0.96;
+  line-height: 0.94;
   font-weight: 800;
 }
 
@@ -283,7 +289,7 @@ img {
   padding: 0 1rem;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.7);
   font-size: 0.8rem;
   font-weight: 700;
 }
@@ -301,9 +307,120 @@ img {
 }
 
 .section-tab.active {
-  background: var(--surface-strong);
+  background: rgba(255, 255, 255, 0.92);
   color: var(--text);
-  box-shadow: 0 10px 24px rgba(45, 31, 14, 0.08);
+  box-shadow: var(--shadow-md);
+}
+
+.bento-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.bento-card:hover {
+  transform: scale(1.02);
+}
+
+.bento-card-white {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(29, 29, 31, 0.07);
+}
+
+.bento-card-coral,
+.bento-card-blue,
+.bento-card-mustard,
+.bento-card-emerald {
+  color: white;
+  border-color: transparent;
+}
+
+.bento-card-coral {
+  background: linear-gradient(135deg, #ff7b72 0%, #ff5f57 100%);
+}
+
+.bento-card-blue {
+  background: linear-gradient(135deg, #4ea1ff 0%, #0a84ff 100%);
+}
+
+.bento-card-mustard {
+  background: linear-gradient(135deg, #f7c948 0%, #f4b400 100%);
+}
+
+.bento-card-emerald {
+  background: linear-gradient(135deg, #32d59c 0%, #10b981 100%);
+}
+
+.bento-card-coral .hint,
+.bento-card-coral .badge,
+.bento-card-coral .hero-label,
+.bento-card-coral span,
+.bento-card-coral small,
+.bento-card-blue .hint,
+.bento-card-blue .badge,
+.bento-card-blue .hero-label,
+.bento-card-blue span,
+.bento-card-blue small,
+.bento-card-mustard .hint,
+.bento-card-mustard .badge,
+.bento-card-mustard .hero-label,
+.bento-card-mustard span,
+.bento-card-mustard small,
+.bento-card-emerald .hint,
+.bento-card-emerald .badge,
+.bento-card-emerald .hero-label,
+.bento-card-emerald span,
+.bento-card-emerald small {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.bento-card-coral .health-row span,
+.bento-card-blue .health-row span,
+.bento-card-mustard .health-row span,
+.bento-card-emerald .health-row span,
+.bento-card-coral .total-row span,
+.bento-card-blue .total-row span,
+.bento-card-mustard .total-row span,
+.bento-card-emerald .total-row span {
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.bento-card-coral::after,
+.bento-card-blue::after,
+.bento-card-mustard::after,
+.bento-card-emerald::after {
+  position: absolute;
+  right: 1rem;
+  bottom: -0.6rem;
+  font-size: 6rem;
+  line-height: 1;
+  opacity: 0.12;
+  pointer-events: none;
+  color: white;
+}
+
+.watermark-chart::after {
+  content: "\25D4";
+}
+
+.watermark-spark::after {
+  content: "\2726";
+}
+
+.watermark-drop::after {
+  content: "\25D6";
+}
+
+.watermark-box::after {
+  content: "\25EB";
+}
+
+.watermark-scan::after {
+  content: "\2318";
+}
+
+.watermark-cash::after {
+  content: "$";
 }
 
 .stats-grid,
@@ -336,7 +453,7 @@ img {
   display: grid;
   gap: 0.45rem;
   padding: 1rem;
-  border-radius: 1.6rem;
+  border-radius: 24px;
 }
 
 .stat-card span {
@@ -445,7 +562,7 @@ select:focus {
 .catalog-card,
 .quick-sale-card,
 .magazine-card {
-  border-radius: 1.45rem;
+  border-radius: 24px;
   padding: 0.95rem;
 }
 
@@ -464,7 +581,7 @@ select:focus {
 .catalog-image-placeholder {
   width: 88px;
   height: 88px;
-  border-radius: 1.1rem;
+  border-radius: 22px;
   border: 1px solid var(--line);
   background: var(--surface-soft);
   object-fit: cover;
@@ -530,7 +647,7 @@ select:focus {
 .magazine-card .catalog-image-placeholder {
   width: 100%;
   height: 12rem;
-  border-radius: 1.25rem;
+  border-radius: 24px;
   border: 1px solid var(--line);
   background: var(--surface-soft);
   object-fit: cover;
@@ -555,7 +672,7 @@ select:focus {
 .inline-note {
   align-content: center;
   min-height: 3.2rem;
-  border-radius: 1.1rem;
+  border-radius: 22px;
   padding: 0.75rem 1rem;
 }
 
@@ -568,7 +685,7 @@ select:focus {
   display: grid;
   place-items: center;
   min-height: 6rem;
-  border-radius: 1.2rem;
+  border-radius: 24px;
   border: 1px dashed var(--line-strong);
   background: rgba(255, 255, 255, 0.45);
   text-align: center;
@@ -597,10 +714,10 @@ select:focus {
   overflow: hidden;
   min-height: 340px;
   border: 1px solid var(--line);
-  border-radius: 1.8rem;
+  border-radius: var(--radius-xl);
   background:
-    linear-gradient(180deg, rgba(16, 12, 8, 0.12), rgba(16, 12, 8, 0.24)),
-    #120d09;
+    linear-gradient(180deg, rgba(8, 20, 44, 0.12), rgba(8, 20, 44, 0.28)),
+    rgba(255, 255, 255, 0.18);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
@@ -622,7 +739,7 @@ select:focus {
   width: min(76vw, 260px);
   height: min(76vw, 260px);
   border: 3px solid rgba(255, 255, 255, 0.92);
-  border-radius: 2rem;
+  border-radius: 30px;
   box-shadow: 0 0 0 999px rgba(14, 10, 7, 0.16);
 }
 
@@ -1085,15 +1202,18 @@ select:focus {
   display: grid;
   gap: 0.8rem;
   padding: 1.45rem;
-  border-radius: 2rem;
+  border-radius: var(--radius-xl);
   color: white;
   overflow: hidden;
   box-shadow: 0 22px 40px rgba(59, 73, 123, 0.2);
 }
 
-.hero-card-primary,
+.hero-card-primary {
+  background: linear-gradient(145deg, #4ea1ff 0%, #0a84ff 52%, #6eb5ff 100%);
+}
+
 .cash-balance-card {
-  background: linear-gradient(145deg, #7f96d8 0%, #6e84ca 52%, #91a7e5 100%);
+  background: linear-gradient(145deg, #32d59c 0%, #10b981 52%, #6fe0b8 100%);
 }
 
 .hero-card strong,
@@ -1158,8 +1278,8 @@ select:focus {
   gap: 0.35rem;
   padding: 1rem 1.1rem;
   border: 1px solid var(--line);
-  border-radius: 1.5rem;
-  background: rgba(255, 255, 255, 0.78);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.72);
   box-shadow: var(--shadow-md);
 }
 
@@ -1178,11 +1298,11 @@ select:focus {
 }
 
 .cash-card.positive strong {
-  color: #305bc8;
+  color: #0a84ff;
 }
 
 .cash-card.negative strong {
-  color: #d64545;
+  color: #ff453a;
 }
 
 .subtle-badge {
@@ -1263,7 +1383,7 @@ select:focus {
 .manual-entry-card {
   margin-top: 1rem;
   padding: 1rem;
-  border-radius: 1.45rem;
+  border-radius: 24px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.72);
 }
@@ -1303,10 +1423,10 @@ select:focus {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 2.2rem;
+  height: 2.2rem;
   border-radius: 999px;
-  background: rgba(118, 105, 91, 0.08);
+  background: rgba(29, 29, 31, 0.06);
   color: var(--text);
   font-size: 1.15rem;
   font-weight: 700;
