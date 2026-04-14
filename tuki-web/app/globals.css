@@ -996,8 +996,6 @@ select:focus {
 .cash-split-grid,
 .cashflow-layout,
 .sales-pos-layout,
-.scanner-glance-card,
-.scanner-glance-metric,
 .pos-inline-grid,
 .totals-card,
 .manual-entry-card,
@@ -1199,31 +1197,10 @@ select:focus {
   background: rgba(255, 255, 255, 0.72);
 }
 
-.scanner-glance-card {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
-  align-items: stretch;
-}
-
-.scanner-glance-metric {
-  gap: 0.3rem;
-  padding: 0.95rem 1rem;
-  border: 1px solid var(--line);
-  border-radius: 1.25rem;
-  background: rgba(255, 255, 255, 0.82);
-}
-
-.scanner-glance-metric span {
-  color: var(--muted);
-  font-size: 0.76rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.scanner-glance-metric strong {
-  font-size: 1.55rem;
-  line-height: 1;
-  letter-spacing: -0.04em;
+.scanner-quick-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.35rem;
 }
 
 .manual-entry-disclosure {
@@ -1413,14 +1390,13 @@ select:focus {
 
   .hero-panel,
   .hero-side-grid,
-  .dashboard-mobile-grid,
-  .sales-pos-layout,
-  .cashflow-hero,
-  .cashflow-layout,
-  .pos-inline-grid,
-  .scanner-glance-card {
-    grid-template-columns: 1fr;
-  }
+    .dashboard-mobile-grid,
+    .sales-pos-layout,
+    .cashflow-hero,
+    .cashflow-layout,
+    .pos-inline-grid {
+      grid-template-columns: 1fr;
+    }
 
   .section-header h2 {
     font-size: 2.15rem;
@@ -1475,11 +1451,11 @@ select:focus {
   }
 
   .scanner-stage {
-    min-height: 228px;
+    min-height: 212px;
   }
 
   #scanner-video {
-    height: 228px;
+    height: 212px;
   }
 
   .manual-entry-card,
@@ -1487,16 +1463,12 @@ select:focus {
     border-radius: 1.25rem;
   }
 
-  .scanner-glance-card {
-    gap: 0.7rem;
+  .scanner-quick-actions {
+    justify-content: stretch;
   }
 
-  .scanner-glance-metric {
-    padding: 0.9rem 0.95rem;
-  }
-
-  .scanner-glance-metric strong {
-    font-size: 1.35rem;
+  .scanner-quick-actions .secondary-button {
+    width: 100%;
   }
 
   #scanner-last-read {

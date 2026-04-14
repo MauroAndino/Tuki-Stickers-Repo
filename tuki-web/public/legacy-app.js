@@ -174,6 +174,9 @@ const scannerState = {
   cart: [],
   lastScanValue: "",
   lastScanAt: 0,
+  lockedCode: "",
+  consecutiveMisses: 0,
+  globalCooldownUntil: 0,
 };
 let currentQrCanvasDataUrl = "";
 let currentQrValue = "";
@@ -233,8 +236,6 @@ const els = {
   scannerVideo: document.getElementById("scanner-video"),
   scannerStatus: document.getElementById("scanner-status"),
   scannerLastRead: document.getElementById("scanner-last-read"),
-  scannerGlanceCount: document.getElementById("scanner-glance-count"),
-  scannerGlanceTotal: document.getElementById("scanner-glance-total"),
   scannerJumpCart: document.getElementById("scanner-jump-cart"),
   scannerCart: document.getElementById("scanner-cart"),
   scannerCartCount: document.getElementById("scanner-cart-count"),
@@ -831,6 +832,9 @@ async function startScanner() {
     scannerState.active = true;
     scannerState.engine = "jsqr";
     scannerState.lastAttemptAt = 0;
+    scannerState.lockedCode = "";
+    scannerState.consecutiveMisses = 0;
+    scannerState.globalCooldownUntil = 0;
     ensureScannerCanvas();
     setScannerStatus("Camara activa", "Escaner QR listo para leer en tiempo real.");
     scanFrame();
@@ -857,6 +861,9 @@ function stopScanner() {
   scannerState.active = false;
   scannerState.engine = "";
   scannerState.lastAttemptAt = 0;
+  scannerState.lockedCode = "";
+  scannerState.consecutiveMisses = 0;
+  scannerState.globalCooldownUntil = 0;
   if (els.scannerVideo) {
     els.scannerVideo.srcObject = null;
   }
@@ -874,7 +881,13 @@ async function scanFrame() {
       scannerState.lastAttemptAt = now;
       const qrValue = decodeQrFromVideo();
       if (qrValue) {
+        scannerState.consecutiveMisses = 0;
         processDetectedCode(qrValue);
+      } else {
+        scannerState.consecutiveMisses += 1;
+        if (scannerState.consecutiveMisses >= 4) {
+          scannerState.lockedCode = "";
+        }
       }
     }
   } catch (error) {
@@ -891,12 +904,22 @@ function processDetectedCode(rawValue) {
     return;
   }
 
-  if (scannerState.lastScanValue === code && now - scannerState.lastScanAt < 1200) {
+  if (now < scannerState.globalCooldownUntil) {
+    return;
+  }
+
+  if (scannerState.lockedCode === code) {
+    return;
+  }
+
+  if (scannerState.lastScanValue === code && now - scannerState.lastScanAt < 1800) {
     return;
   }
 
   scannerState.lastScanValue = code;
   scannerState.lastScanAt = now;
+  scannerState.lockedCode = code;
+  scannerState.globalCooldownUntil = now + 420;
 
   const product = findProduct(code);
   if (!product) {
@@ -1006,11 +1029,7 @@ function updateScannerItemQuantity(sku, quantity) {
     return;
   }
 
-  const safeQuantity = Number.isFinite(quantity) ? Math.max(0, Math.floor(quantity)) : item.quantity;
-  if (safeQuantity === 0) {
-    removeScannerItem(sku);
-    return;
-  }
+  const safeQuantity = Number.isFinite(quantity) ? Math.max(1, Math.floor(quantity)) : item.quantity;
 
   item.quantity = Math.min(safeQuantity, product.stock);
   renderScanner();
@@ -1433,8 +1452,6 @@ function renderScanner() {
 
   setElementText(els.scannerCartCount, String(totalUnits));
   setElementText(els.scannerCartTotal, formatCurrency(totalAmount));
-  setElementText(els.scannerGlanceCount, String(totalUnits));
-  setElementText(els.scannerGlanceTotal, formatCurrency(totalAmount));
   if (els.scannerCartTotalLarge) {
     els.scannerCartTotalLarge.textContent = formatCurrency(totalAmount);
   }
@@ -2088,16 +2105,23 @@ function setScannerStatus(title, detail) {
 }
 
 function setScannerLastRead(code, product, message) {
+  const cartItem = product
+    ? scannerState.cart.find((item) => item.sku === product.sku)
+    : null;
+  const secondaryLine = product
+    ? `${product.sku} · ${cartItem ? `${cartItem.quantity} en carrito` : "Aun no agregado"}`
+    : "Codigo no identificado";
+
   els.scannerLastRead.innerHTML = `
-    <article class="list-item">
-      <div>
-        <strong>${product ? product.name : code || "Sin lectura"}</strong>
-        <div class="hint">${product ? product.sku : "Codigo no identificado"}</div>
-      </div>
-      <div>
-        <span class="status-tag ${product ? "good" : "low"}">${message}</span>
-      </div>
-    </article>
+      <article class="list-item">
+        <div>
+          <strong>${product ? product.name : code || "Sin lectura"}</strong>
+          <div class="hint">${secondaryLine}</div>
+        </div>
+        <div>
+          <span class="status-tag ${product ? "good" : "low"}">${message}</span>
+        </div>
+      </article>
   `;
 }
 
