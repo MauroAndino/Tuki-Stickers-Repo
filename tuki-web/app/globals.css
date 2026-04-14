@@ -63,6 +63,25 @@ img {
   padding: 1.25rem;
 }
 
+.mobile-nav-toggle,
+.mobile-nav-close {
+  display: none;
+}
+
+.mobile-nav-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 54;
+  background: rgba(24, 17, 11, 0.32);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.mobile-nav-backdrop.visible {
+  opacity: 1;
+}
+
 .sidebar {
   position: sticky;
   top: 1.25rem;
@@ -769,6 +788,10 @@ select:focus {
 }
 
 @media (max-width: 760px) {
+  body.mobile-nav-open {
+    overflow: hidden;
+  }
+
   body {
     background:
       radial-gradient(circle at top center, rgba(255, 215, 182, 0.46), transparent 30%),
@@ -781,19 +804,34 @@ select:focus {
   }
 
   .sidebar {
-    position: static;
-    height: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 55;
+    width: min(82vw, 320px);
+    height: 100vh;
     gap: 0.85rem;
-    padding: 1rem 1rem 0;
+    padding: 1rem;
     border: none;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    backdrop-filter: none;
+    border-radius: 0 1.6rem 1.6rem 0;
+    background: rgba(255, 252, 247, 0.98);
+    box-shadow: 0 24px 54px rgba(31, 21, 13, 0.2);
+    backdrop-filter: blur(18px);
+    transform: translateX(-105%);
+    transition: transform 220ms ease;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
   }
 
   .sidebar > div:first-child {
     gap: 0.3rem;
+  }
+
+  .sidebar-brand {
+    position: relative;
+    padding-right: 2.7rem;
   }
 
   .sidebar h1 {
@@ -805,35 +843,68 @@ select:focus {
     font-size: 0.88rem;
   }
 
-  .nav {
+  .mobile-nav-toggle {
     position: fixed;
-    left: 0.8rem;
-    right: 0.8rem;
-    bottom: 0.8rem;
-    z-index: 50;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.35rem;
-    padding: 0.45rem;
-    border: 1px solid rgba(78, 61, 41, 0.1);
-    border-radius: 1.45rem;
+    top: 1rem;
+    left: 1rem;
+    z-index: 56;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.28rem;
+    width: 3rem;
+    height: 3rem;
+    padding: 0.75rem;
+    border: 1px solid rgba(78, 61, 41, 0.12);
+    border-radius: 1rem;
     background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 20px 45px rgba(31, 21, 13, 0.18);
+    box-shadow: 0 14px 32px rgba(31, 21, 13, 0.14);
     backdrop-filter: blur(18px);
   }
 
-  .nav-link {
-    min-height: 3.2rem;
+  .mobile-nav-toggle span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--text);
+  }
+
+  .mobile-nav-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    padding: 0.55rem 0.3rem;
+    width: 2.2rem;
+    height: 2.2rem;
+    border: 1px solid rgba(78, 61, 41, 0.08);
+    border-radius: 999px;
+    background: rgba(118, 105, 91, 0.08);
+    color: var(--text);
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+
+  .nav {
+    gap: 0.45rem;
+    padding-top: 0.45rem;
+  }
+
+  .nav-link {
+    min-height: 3.1rem;
+    justify-content: flex-start;
+    padding: 0.8rem 1rem;
     border-radius: 1rem;
-    font-size: 0.7rem;
+    font-size: 0.9rem;
     line-height: 1.15;
-    text-align: center;
+    text-align: left;
   }
 
   .nav-link.active {
-    border-color: transparent;
-    box-shadow: none;
+    border-color: rgba(78, 61, 41, 0.08);
+    box-shadow: 0 8px 18px rgba(45, 31, 14, 0.08);
   }
 
   .panel-muted {
@@ -846,7 +917,7 @@ select:focus {
 
   .main-content {
     gap: 0.85rem;
-    padding: 0 1rem 7rem;
+    padding: 4.6rem 1rem 1.4rem;
   }
 
   .section-header {
@@ -1371,10 +1442,6 @@ select:focus {
 @media (max-width: 760px) {
   .sidebar-copy {
     display: none;
-  }
-
-  .nav {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .nav-link[data-view="restock"],

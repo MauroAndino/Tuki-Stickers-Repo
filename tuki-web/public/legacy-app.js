@@ -185,6 +185,10 @@ let lastCreatedSku = "";
 
 const els = {
   navLinks: [...document.querySelectorAll(".nav-link")],
+  sidebar: document.querySelector(".sidebar"),
+  mobileNavToggle: document.getElementById("mobile-nav-toggle"),
+  mobileNavClose: document.getElementById("mobile-nav-close"),
+  mobileNavBackdrop: document.getElementById("mobile-nav-backdrop"),
   views: [...document.querySelectorAll(".view")],
   sectionTabs: [...document.querySelectorAll(".section-tab")],
   tabPanels: [...document.querySelectorAll(".tab-panel")],
@@ -315,6 +319,7 @@ async function init() {
   populateMaterialSelects();
   setTodayDefaults();
   syncManualEntryDisclosure();
+  syncMobileNavState();
   bindEvents();
   if (!window.location.hash) {
     window.location.hash = "#dashboard";
@@ -330,6 +335,7 @@ function bindEvents() {
     bindPress(button, () => {
       const href = button.getAttribute("href") || "#view=dashboard";
       applyNavigationHref(href);
+      closeMobileNav();
     });
   });
 
@@ -354,6 +360,9 @@ function bindEvents() {
   onElement(els.scannerCart, "click", handleScannerCartClick);
   onElement(els.scannerCart, "change", handleScannerCartChange);
   onElement(els.scannerJumpCart, "click", jumpToScannerCart);
+  onElement(els.mobileNavToggle, "click", toggleMobileNav);
+  onElement(els.mobileNavClose, "click", closeMobileNav);
+  onElement(els.mobileNavBackdrop, "click", closeMobileNav);
   onElement(els.catalogGalleryGrid, "click", handleCatalogGalleryClick);
   onElement(els.closeProductDetail, "click", closeProductDetailModal);
   onElement(els.productDetailModal, "click", handleProductDetailBackdrop);
@@ -368,9 +377,10 @@ function bindEvents() {
   onElement(els.resetButton, "click", resetAllData);
   onElement(els.exportButton, "click", exportBackup);
     onElement(els.importButton, "click", () => els.importFile?.click());
-    onElement(els.importFile, "change", importBackup);
-    onElement(els.undoLastScan, "click", undoLastScannerItem);
-    window.addEventListener("resize", syncManualEntryDisclosure);
+      onElement(els.importFile, "change", importBackup);
+      onElement(els.undoLastScan, "click", undoLastScannerItem);
+      window.addEventListener("resize", syncManualEntryDisclosure);
+      window.addEventListener("resize", syncMobileNavState);
 
   if (els.quickSaleGrid) {
     els.quickSaleGrid.addEventListener("click", handleQuickSaleClick);
@@ -427,6 +437,47 @@ function syncManualEntryDisclosure() {
   }
 
   els.manualEntryDisclosure.open = window.innerWidth > 760;
+}
+
+function isMobileViewport() {
+  return window.innerWidth <= 760;
+}
+
+function openMobileNav() {
+  if (!isMobileViewport()) {
+    return;
+  }
+
+  els.sidebar?.classList.add("mobile-open");
+  if (els.mobileNavBackdrop) {
+    els.mobileNavBackdrop.hidden = false;
+    els.mobileNavBackdrop.classList.add("visible");
+  }
+  document.body.classList.add("mobile-nav-open");
+}
+
+function closeMobileNav() {
+  els.sidebar?.classList.remove("mobile-open");
+  if (els.mobileNavBackdrop) {
+    els.mobileNavBackdrop.classList.remove("visible");
+    els.mobileNavBackdrop.hidden = true;
+  }
+  document.body.classList.remove("mobile-nav-open");
+}
+
+function toggleMobileNav() {
+  if (els.sidebar?.classList.contains("mobile-open")) {
+    closeMobileNav();
+    return;
+  }
+
+  openMobileNav();
+}
+
+function syncMobileNavState() {
+  if (!isMobileViewport()) {
+    closeMobileNav();
+  }
 }
 
 function bindPress(element, handler) {
