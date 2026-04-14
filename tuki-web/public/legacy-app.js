@@ -337,35 +337,33 @@ function bindEvents() {
 
   window.addEventListener("hashchange", syncNavigationFromHash);
 
-  els.productForm.addEventListener("submit", handleProductSubmit);
-  els.themeForm.addEventListener("submit", handleThemeSubmit);
-  els.saleForm.addEventListener("submit", handleSaleSubmit);
-  els.restockForm.addEventListener("submit", handleRestockSubmit);
-  if (els.quickSaleForm) {
-    els.quickSaleForm.addEventListener("submit", handleQuickSaleSubmit);
-  }
-  els.startScanner.addEventListener("click", startScanner);
-  els.stopScanner.addEventListener("click", stopScanner);
-  els.clearScannerCart.addEventListener("click", clearScannerCart);
-  els.confirmScannerSale.addEventListener("click", confirmScannerSale);
-  els.scannerCart.addEventListener("click", handleScannerCartClick);
-  els.scannerCart.addEventListener("change", handleScannerCartChange);
-  els.catalogGalleryGrid.addEventListener("click", handleCatalogGalleryClick);
-  els.closeProductDetail.addEventListener("click", closeProductDetailModal);
-  els.productDetailModal.addEventListener("click", handleProductDetailBackdrop);
-  els.productDetailForm.addEventListener("submit", handleProductDetailSubmit);
-  els.productDetailGenerateQr.addEventListener("click", handleProductDetailGenerateQr);
-  els.productDetailDownloadQr.addEventListener("click", downloadCurrentQrPng);
-  els.productDetailDelete.addEventListener("click", handleProductDelete);
-  els.generateQrButton.addEventListener("click", handleGenerateQr);
-  els.verifyQrButton.addEventListener("click", verifyCurrentQr);
-  els.downloadQrButton.addEventListener("click", downloadCurrentQrPng);
-  els.seedButton.addEventListener("click", seedDemoData);
-  els.resetButton.addEventListener("click", resetAllData);
-  els.exportButton.addEventListener("click", exportBackup);
-  els.importButton.addEventListener("click", () => els.importFile.click());
-  els.importFile.addEventListener("change", importBackup);
-  els.undoLastScan.addEventListener("click", undoLastScannerItem);
+  onElement(els.productForm, "submit", handleProductSubmit);
+  onElement(els.themeForm, "submit", handleThemeSubmit);
+  onElement(els.saleForm, "submit", handleSaleSubmit);
+  onElement(els.restockForm, "submit", handleRestockSubmit);
+  onElement(els.quickSaleForm, "submit", handleQuickSaleSubmit);
+  onElement(els.startScanner, "click", startScanner);
+  onElement(els.stopScanner, "click", stopScanner);
+  onElement(els.clearScannerCart, "click", clearScannerCart);
+  onElement(els.confirmScannerSale, "click", confirmScannerSale);
+  onElement(els.scannerCart, "click", handleScannerCartClick);
+  onElement(els.scannerCart, "change", handleScannerCartChange);
+  onElement(els.catalogGalleryGrid, "click", handleCatalogGalleryClick);
+  onElement(els.closeProductDetail, "click", closeProductDetailModal);
+  onElement(els.productDetailModal, "click", handleProductDetailBackdrop);
+  onElement(els.productDetailForm, "submit", handleProductDetailSubmit);
+  onElement(els.productDetailGenerateQr, "click", handleProductDetailGenerateQr);
+  onElement(els.productDetailDownloadQr, "click", downloadCurrentQrPng);
+  onElement(els.productDetailDelete, "click", handleProductDelete);
+  onElement(els.generateQrButton, "click", handleGenerateQr);
+  onElement(els.verifyQrButton, "click", verifyCurrentQr);
+  onElement(els.downloadQrButton, "click", downloadCurrentQrPng);
+  onElement(els.seedButton, "click", seedDemoData);
+  onElement(els.resetButton, "click", resetAllData);
+  onElement(els.exportButton, "click", exportBackup);
+  onElement(els.importButton, "click", () => els.importFile?.click());
+  onElement(els.importFile, "change", importBackup);
+  onElement(els.undoLastScan, "click", undoLastScannerItem);
 
   if (els.quickSaleGrid) {
     els.quickSaleGrid.addEventListener("click", handleQuickSaleClick);
@@ -406,6 +404,14 @@ function bindEvents() {
     els.catalogMinUnits.value = "";
     render();
   });
+}
+
+function onElement(element, eventName, handler) {
+  if (!element) {
+    return;
+  }
+
+  element.addEventListener(eventName, handler);
 }
 
 function bindPress(element, handler) {
