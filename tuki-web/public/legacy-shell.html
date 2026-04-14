@@ -9,9 +9,10 @@
         </div>
 
         <nav class="nav">
-          <a class="nav-link active" href="#dashboard" data-view="dashboard">Resumen</a>
+          <a class="nav-link active" href="#dashboard" data-view="dashboard">Inicio</a>
           <a class="nav-link" href="#catalog" data-view="catalog">Catalogo</a>
-          <a class="nav-link" href="#sales" data-view="sales">Ventas</a>
+          <a class="nav-link" href="#sales" data-view="sales">POS</a>
+          <a class="nav-link" href="#cashflow" data-view="cashflow">Caja</a>
           <a class="nav-link" href="#restock" data-view="restock">Ingresos</a>
           <a class="nav-link" href="#assistant" data-view="assistant">Asistente</a>
         </nav>
@@ -37,36 +38,90 @@
           <header class="section-header">
             <div>
               <p class="eyebrow">Control diario</p>
-              <h2>Resumen del negocio</h2>
+              <h2>Tablero operativo</h2>
             </div>
-            <div class="badge">MVP local</div>
+            <div class="badge">TUKI! en movimiento</div>
           </header>
 
-          <div class="stats-grid">
-            <article class="stat-card">
-              <span>Stock total</span>
-              <strong id="stat-total-stock">0</strong>
-              <small>Unidades disponibles</small>
+          <section class="hero-panel">
+            <article class="hero-card hero-card-primary">
+              <span class="hero-label">Estado general de stock</span>
+              <strong id="dashboard-health-score">0%</strong>
+              <small id="dashboard-health-caption">Sin datos suficientes.</small>
+              <div class="hero-bars">
+                <span></span><span></span><span></span><span></span><span class="active"></span>
+              </div>
             </article>
-            <article class="stat-card">
-              <span>Modelos activos</span>
-              <strong id="stat-active-products">0</strong>
-              <small>Con stock disponible</small>
-            </article>
-            <article class="stat-card">
-              <span>Ventas totales</span>
-              <strong id="stat-total-sales">0</strong>
-              <small>Unidades vendidas</small>
-            </article>
-            <article class="stat-card">
-              <span>Ingresos estimados</span>
-              <strong id="stat-revenue">$0</strong>
-              <small>Suma de ventas registradas</small>
-            </article>
-          </div>
 
-          <div class="two-column">
-            <section class="panel">
+            <div class="hero-side-grid">
+              <article class="mini-kpi-card">
+                <span>Stock total</span>
+                <strong id="stat-total-stock">0</strong>
+                <small>Unidades disponibles</small>
+              </article>
+              <article class="mini-kpi-card">
+                <span>Modelos activos</span>
+                <strong id="stat-active-products">0</strong>
+                <small>Con stock para vender</small>
+              </article>
+              <article class="mini-kpi-card">
+                <span>Ventas registradas</span>
+                <strong id="stat-total-sales">0</strong>
+                <small>Unidades vendidas</small>
+              </article>
+              <article class="mini-kpi-card">
+                <span>Ingreso estimado</span>
+                <strong id="stat-revenue">$0</strong>
+                <small>Ventas acumuladas</small>
+              </article>
+            </div>
+          </section>
+
+          <div class="dashboard-mobile-grid">
+            <section class="panel insight-panel">
+              <div class="panel-header">
+                <div>
+                  <h3>AI Insights</h3>
+                  <span class="hint">Analisis rapido del dia</span>
+                </div>
+                <span class="badge subtle-badge">Realtime</span>
+              </div>
+              <div id="dashboard-ai-insights" class="insight-stack empty-state-inline"></div>
+            </section>
+
+            <section class="panel dashboard-sales-panel">
+              <div class="panel-header">
+                <h3>Ventas recientes</h3>
+                <span class="hint">Lo ultimo que se movio</span>
+              </div>
+              <div id="dashboard-recent-sales" class="list-card empty-state-inline"></div>
+            </section>
+
+            <section class="panel stock-health-panel">
+              <div class="panel-header">
+                <h3>Salud del stock</h3>
+                <span class="hint">Lectura rapida para reponer</span>
+              </div>
+              <div class="health-metrics">
+                <div class="health-row">
+                  <span>En stock</span>
+                  <strong id="dashboard-in-stock-rate">0%</strong>
+                </div>
+                <div class="health-bar"><span id="dashboard-in-stock-bar"></span></div>
+                <div class="health-row">
+                  <span>Alertas de stock bajo</span>
+                  <strong id="dashboard-low-stock-count">0</strong>
+                </div>
+                <div class="health-bar warning"><span id="dashboard-low-stock-bar"></span></div>
+                <div class="health-row">
+                  <span>Fuera de stock</span>
+                  <strong id="dashboard-out-stock-count">0</strong>
+                </div>
+                <div class="health-bar danger"><span id="dashboard-out-stock-bar"></span></div>
+              </div>
+            </section>
+
+            <section class="panel desktop-analytics-panel">
               <div class="panel-header">
                 <h3>Top modelos</h3>
                 <span class="hint">Por unidades vendidas</span>
@@ -74,17 +129,15 @@
               <div id="top-products-chart" class="chart-list empty-state-inline"></div>
             </section>
 
-            <section class="panel">
+            <section class="panel desktop-analytics-panel">
               <div class="panel-header">
                 <h3>Ventas por canal</h3>
                 <span class="hint">Feria, local y online</span>
               </div>
               <div id="sales-channel-chart" class="chart-list empty-state-inline"></div>
             </section>
-          </div>
 
-          <div class="two-column">
-            <section class="panel">
+            <section class="panel desktop-analytics-panel">
               <div class="panel-header">
                 <h3>Tendencias por vinilo</h3>
                 <span class="hint">Que acabado rota mejor</span>
@@ -92,7 +145,7 @@
               <div id="material-chart" class="chart-list empty-state-inline"></div>
             </section>
 
-            <section class="panel">
+            <section class="panel desktop-analytics-panel">
               <div class="panel-header">
                 <h3>Alertas de stock</h3>
                 <span class="hint">Modelos para reponer</span>
@@ -277,7 +330,7 @@
           <header class="section-header">
             <div>
               <p class="eyebrow">Operacion</p>
-              <h2>Registrar venta</h2>
+              <h2>Punto de venta</h2>
             </div>
           </header>
 
@@ -291,59 +344,31 @@
           <section id="sales-fast" class="tab-panel active" data-tab-group="sales">
             <section class="panel">
               <div class="panel-header">
-                <h3>Modo rapido de feria</h3>
-                <span class="hint">Carga por SKU o ID</span>
+                <h3>Modo rapido</h3>
+                <span class="hint">Atajos para escritorio y revision</span>
               </div>
-
-              <form id="quick-sale-form" class="form-grid">
-                <label>
-                  SKU / ID
-                  <input id="quick-sale-sku" name="sku" list="sku-suggestions" placeholder="TUKI-001" required />
-                </label>
-                <label>
-                  Cantidad
-                  <input
-                    id="quick-sale-quantity"
-                    name="quantity"
-                    type="number"
-                    min="1"
-                    step="1"
-                    value="1"
-                    required
-                  />
-                </label>
-                <label>
-                  Canal
-                  <select id="quick-sale-channel" name="channel">
-                    <option value="Feria">Feria</option>
-                    <option value="Local">Local amigo</option>
-                    <option value="Online">Online</option>
-                  </select>
-                </label>
-                <div class="inline-note">
-                  <strong id="quick-sale-price-preview">$0</strong>
-                  <span class="hint">Precio automatico segun SKU</span>
-                </div>
-                <button type="submit" class="primary-button wide">Registrar rapido</button>
-              </form>
-
-              <div id="quick-sale-preview" class="list-card empty-state-inline"></div>
-              <datalist id="sku-suggestions"></datalist>
-
-              <div class="panel-header compact-header">
-                <h4>SKUs mas vendidos</h4>
-                <span class="hint">Atajo visual</span>
+              <div class="assistant-report">
+                <article class="assistant-block">
+                  <strong>En celular, el foco esta en POS</strong>
+                  <p>Usa la pestaña <strong>Escanear</strong> para vender en ferias con camara, entrada manual y carrito en una sola pantalla.</p>
+                </article>
+                <article class="assistant-block">
+                  <strong>En escritorio, esta vista queda como apoyo</strong>
+                  <p>Sirve para consultar el flujo de venta, revisar movimientos recientes y dejar la operacion rapida concentrada en la pantalla POS.</p>
+                </article>
               </div>
-              <div id="quick-sale-grid" class="quick-sale-grid empty-state-inline"></div>
             </section>
           </section>
 
           <section id="sales-scan" class="tab-panel" data-tab-group="sales">
-            <div class="two-column">
-              <section class="panel">
+            <div class="sales-pos-layout">
+              <section class="panel pos-scanner-panel">
                 <div class="panel-header">
-                  <h3>Escaner de camara</h3>
-                  <span class="hint">Escanea varios stickers y confirma al final</span>
+                  <div>
+                    <h3>Live scanner active</h3>
+                    <span class="hint">Escanea y arma la venta en tiempo real</span>
+                  </div>
+                  <span class="badge subtle-badge">POS</span>
                 </div>
 
                 <div class="scanner-toolbar">
@@ -377,12 +402,47 @@
                 </div>
 
                 <div id="scanner-last-read" class="list-card empty-state-inline"></div>
+
+                <section class="manual-entry-card">
+                  <div class="panel-header compact-header">
+                    <h4>Entrada manual</h4>
+                    <span class="hint">Busca por nombre o ID</span>
+                  </div>
+                  <form id="quick-sale-form" class="pos-manual-form">
+                    <input id="quick-sale-sku" name="sku" list="sku-suggestions" placeholder="Escribe nombre o SKU" required />
+                    <button type="submit" class="primary-button">Agregar item</button>
+                    <div class="pos-inline-grid">
+                      <label>
+                        Cantidad
+                        <input
+                          id="quick-sale-quantity"
+                          name="quantity"
+                          type="number"
+                          min="1"
+                          step="1"
+                          value="1"
+                          required
+                        />
+                      </label>
+                      <label>
+                        Canal
+                        <select id="quick-sale-channel" name="channel">
+                          <option value="Feria">Feria</option>
+                          <option value="Local">Local amigo</option>
+                          <option value="Online">Online</option>
+                        </select>
+                      </label>
+                    </div>
+                  </form>
+                  <div id="quick-sale-preview" class="list-card empty-state-inline"></div>
+                  <datalist id="sku-suggestions"></datalist>
+                </section>
               </section>
 
-              <section class="panel">
+              <section class="panel pos-cart-panel">
                 <div class="panel-header">
-                  <h3>Venta en preparacion</h3>
-                  <span class="hint">Confirma cuando termines de escanear</span>
+                  <h3>Current cart</h3>
+                  <span class="badge subtle-badge" id="scanner-cart-badge">0 items</span>
                 </div>
 
                 <div class="scanner-summary">
@@ -400,10 +460,21 @@
 
                 <div id="scanner-cart" class="list-card empty-state-inline"></div>
 
-                <div class="scanner-actions footer-actions">
+                <div class="totals-card">
+                  <div class="total-row">
+                    <span>Subtotal</span>
+                    <strong id="scanner-subtotal">$0</strong>
+                  </div>
+                  <div class="total-row total-row-strong">
+                    <span>Total</span>
+                    <strong id="scanner-cart-total-large">$0</strong>
+                  </div>
+                </div>
+
+                <div class="scanner-actions footer-actions pos-footer-actions">
                   <button id="undo-last-scan" type="button" class="secondary-button">Deshacer ultimo</button>
                   <button id="clear-scanner-cart" type="button" class="ghost-button">Vaciar</button>
-                  <button id="confirm-scanner-sale" type="button" class="primary-button">Confirmar venta</button>
+                  <button id="confirm-scanner-sale" type="button" class="primary-button">Completar venta</button>
                 </div>
               </section>
             </div>
@@ -534,6 +605,52 @@
                 <span id="restock-count" class="hint">0 movimientos</span>
               </div>
               <div id="restock-list" class="list-card empty-state-inline"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="cashflow" class="view">
+          <header class="section-header">
+            <div>
+              <p class="eyebrow">Finanzas</p>
+              <h2>Caja del emprendimiento</h2>
+            </div>
+            <div class="badge">Entradas y salidas</div>
+          </header>
+
+          <section class="cashflow-hero">
+            <article class="cash-balance-card">
+              <span class="hero-label">Balance neto del dia</span>
+              <strong id="cashflow-balance">$0</strong>
+              <small id="cashflow-balance-caption">Sin movimientos registrados hoy.</small>
+            </article>
+            <div class="cash-split-grid">
+              <article class="cash-card positive">
+                <span>Cash in</span>
+                <strong id="cashflow-in">$0</strong>
+              </article>
+              <article class="cash-card negative">
+                <span>Cash out</span>
+                <strong id="cashflow-out">$0</strong>
+              </article>
+            </div>
+          </section>
+
+          <div class="cashflow-layout">
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Timeline</h3>
+                <span class="hint">Ventas y costos recientes</span>
+              </div>
+              <div id="cashflow-list" class="list-card empty-state-inline"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <h3>Lectura de caja</h3>
+                <span class="hint">Resumen rapido del movimiento</span>
+              </div>
+              <div id="cashflow-insight" class="assistant-report empty-state-inline"></div>
             </section>
           </div>
         </section>

@@ -204,6 +204,16 @@ const els = {
   salesChannelChart: document.getElementById("sales-channel-chart"),
   materialChart: document.getElementById("material-chart"),
   stockAlerts: document.getElementById("stock-alerts"),
+  dashboardHealthScore: document.getElementById("dashboard-health-score"),
+  dashboardHealthCaption: document.getElementById("dashboard-health-caption"),
+  dashboardAiInsights: document.getElementById("dashboard-ai-insights"),
+  dashboardRecentSales: document.getElementById("dashboard-recent-sales"),
+  dashboardInStockRate: document.getElementById("dashboard-in-stock-rate"),
+  dashboardInStockBar: document.getElementById("dashboard-in-stock-bar"),
+  dashboardLowStockCount: document.getElementById("dashboard-low-stock-count"),
+  dashboardLowStockBar: document.getElementById("dashboard-low-stock-bar"),
+  dashboardOutStockCount: document.getElementById("dashboard-out-stock-count"),
+  dashboardOutStockBar: document.getElementById("dashboard-out-stock-bar"),
   assistantReport: document.getElementById("assistant-report"),
   assistantThemeChart: document.getElementById("assistant-theme-chart"),
   assistantColorChart: document.getElementById("assistant-color-chart"),
@@ -228,6 +238,9 @@ const els = {
   scannerCart: document.getElementById("scanner-cart"),
   scannerCartCount: document.getElementById("scanner-cart-count"),
   scannerCartTotal: document.getElementById("scanner-cart-total"),
+  scannerCartTotalLarge: document.getElementById("scanner-cart-total-large"),
+  scannerSubtotal: document.getElementById("scanner-subtotal"),
+  scannerCartBadge: document.getElementById("scanner-cart-badge"),
   startScanner: document.getElementById("start-scanner"),
   stopScanner: document.getElementById("stop-scanner"),
   captureScannerFrame: document.getElementById("capture-scanner-frame"),
@@ -257,6 +270,12 @@ const els = {
   salesDateFrom: document.getElementById("sales-date-from"),
   salesDateTo: document.getElementById("sales-date-to"),
   restockCount: document.getElementById("restock-count"),
+  cashflowBalance: document.getElementById("cashflow-balance"),
+  cashflowBalanceCaption: document.getElementById("cashflow-balance-caption"),
+  cashflowIn: document.getElementById("cashflow-in"),
+  cashflowOut: document.getElementById("cashflow-out"),
+  cashflowList: document.getElementById("cashflow-list"),
+  cashflowInsight: document.getElementById("cashflow-insight"),
   lastUpdated: document.getElementById("last-updated"),
   syncStatus: document.getElementById("sync-status"),
   networkStatus: document.getElementById("network-status"),
@@ -355,10 +374,13 @@ function bindEvents() {
   els.importButton.addEventListener("click", () => els.importFile.click());
   els.importFile.addEventListener("change", importBackup);
   els.syncNowButton.addEventListener("click", handleManualSync);
-  els.quickSaleGrid.addEventListener("click", handleQuickSaleClick);
   els.undoLastScan.addEventListener("click", undoLastScannerItem);
   window.addEventListener("online", updateNetworkStatus);
   window.addEventListener("offline", updateNetworkStatus);
+
+  if (els.quickSaleGrid) {
+    els.quickSaleGrid.addEventListener("click", handleQuickSaleClick);
+  }
 
   [
     els.catalogSearch,
@@ -415,13 +437,13 @@ function bindPress(element, handler) {
 function syncNavigationFromHash() {
   const target = window.location.hash.replace(/^#/, "").trim() || "dashboard";
 
-  if (["dashboard", "catalog", "sales", "restock", "assistant"].includes(target)) {
+  if (["dashboard", "catalog", "sales", "restock", "assistant", "cashflow"].includes(target)) {
     activateView(target);
     if (target === "catalog") {
       activateSectionTab("catalog", "catalog-gallery");
     }
     if (target === "sales") {
-      activateSectionTab("sales", "sales-fast");
+      activateSectionTab("sales", "sales-scan");
     }
     return;
   }
@@ -927,6 +949,20 @@ function undoLastScannerItem() {
 }
 
 function handleScannerCartClick(event) {
+  const stepperButton = event.target.closest("[data-stepper-action]");
+  if (stepperButton) {
+    const sku = stepperButton.dataset.quantitySku;
+    const item = scannerState.cart.find((entry) => entry.sku === sku);
+    if (!item) {
+      return;
+    }
+
+    const nextQuantity =
+      stepperButton.dataset.stepperAction === "plus" ? item.quantity + 1 : item.quantity - 1;
+    updateScannerItemQuantity(sku, nextQuantity);
+    return;
+  }
+
   const removeButton = event.target.closest("[data-remove-sku]");
   if (!removeButton) {
     return;
@@ -1148,6 +1184,7 @@ function render() {
   renderSales();
   renderRestocks();
   renderDashboard();
+  renderCashflow();
   renderAssistant();
   renderLastUpdated();
 }
@@ -1321,6 +1358,10 @@ function renderQuickSale() {
       return soldB - soldA || a.name.localeCompare(b.name);
     });
 
+  if (!els.quickSaleGrid) {
+    return;
+  }
+
   if (!products.length) {
     els.quickSaleGrid.innerHTML = "<p>No hay modelos con stock para venta rapida.</p>";
     return;
@@ -1367,6 +1408,15 @@ function renderScanner() {
 
   els.scannerCartCount.textContent = String(totalUnits);
   els.scannerCartTotal.textContent = formatCurrency(totalAmount);
+  if (els.scannerCartTotalLarge) {
+    els.scannerCartTotalLarge.textContent = formatCurrency(totalAmount);
+  }
+  if (els.scannerSubtotal) {
+    els.scannerSubtotal.textContent = formatCurrency(totalAmount);
+  }
+  if (els.scannerCartBadge) {
+    els.scannerCartBadge.textContent = `${totalUnits} ${totalUnits === 1 ? "item" : "items"}`;
+  }
 
   els.scannerCart.innerHTML = enrichedCart.length
     ? enrichedCart
@@ -1375,11 +1425,15 @@ function renderScanner() {
             <article class="list-item">
               <div>
                 <strong>${item.product.name}</strong>
-                <div class="hint">${item.product.sku} - ${item.product.material} - stock ${item.product.stock}</div>
+                <div class="hint">SKU ${item.product.sku} · ${item.product.material}</div>
               </div>
               <div class="scanner-cart-controls">
-                <label class="scanner-quantity-field">
-                  <span class="hint">Cantidad</span>
+                <div class="scanner-item-meta">
+                  <strong>${formatCurrency(item.product.price)}</strong>
+                  <span class="hint">${item.product.stock} en stock</span>
+                </div>
+                <div class="scanner-stepper">
+                  <button type="button" class="ghost-button" data-stepper-action="minus" data-quantity-sku="${item.product.sku}">-</button>
                   <input
                     type="number"
                     min="0"
@@ -1388,9 +1442,7 @@ function renderScanner() {
                     value="${item.quantity}"
                     data-quantity-sku="${item.product.sku}"
                   />
-                </label>
-                <div class="scanner-item-meta">
-                  <span class="status-tag good">${formatCurrency(item.product.price)} c/u</span>
+                  <button type="button" class="ghost-button" data-stepper-action="plus" data-quantity-sku="${item.product.sku}">+</button>
                   <button type="button" class="ghost-button" data-remove-sku="${item.product.sku}">Quitar</button>
                 </div>
               </div>
@@ -1500,14 +1552,109 @@ function renderDashboard() {
   const activeProducts = state.products.filter((product) => product.stock > 0).length;
   const totalSales = state.sales.reduce((sum, sale) => sum + sale.quantity, 0);
   const revenue = state.sales.reduce((sum, sale) => sum + sale.quantity * sale.unitPrice, 0);
+  const totalModels = state.products.length || 1;
   const lowStock = state.products
     .filter((product) => product.stock <= product.minStock)
     .sort((a, b) => a.stock - b.stock);
+  const outOfStock = state.products.filter((product) => product.stock === 0);
+  const inStockRate = Math.round((activeProducts / totalModels) * 100);
+  const lowStockRate = Math.round((lowStock.length / totalModels) * 100);
+  const outOfStockRate = Math.round((outOfStock.length / totalModels) * 100);
+  const healthScore = Math.max(0, Math.min(100, inStockRate - outOfStockRate * 2 - lowStockRate));
+  const recentSales = state.sales.slice(0, 4);
+  const topThemeEntry = firstEntry(
+    aggregateSalesBy((sale) => findProduct(sale.sku)?.theme || "Sin tema"),
+  );
+  const topMaterialEntry = firstEntry(
+    aggregateSalesBy((sale) => findProduct(sale.sku)?.material || "Sin material"),
+  );
 
   els.statTotalStock.textContent = String(totalStock);
   els.statActiveProducts.textContent = String(activeProducts);
   els.statTotalSales.textContent = String(totalSales);
   els.statRevenue.textContent = formatCurrency(revenue);
+  if (els.dashboardHealthScore) {
+    els.dashboardHealthScore.textContent = `${healthScore}%`;
+  }
+  if (els.dashboardHealthCaption) {
+    els.dashboardHealthCaption.textContent = lowStock.length
+      ? `${lowStock.length} alertas y ${outOfStock.length} agotados requieren seguimiento.`
+      : "Stock saludable para sostener ventas.";
+  }
+  if (els.dashboardInStockRate) {
+    els.dashboardInStockRate.textContent = `${inStockRate}%`;
+  }
+  if (els.dashboardInStockBar) {
+    els.dashboardInStockBar.style.width = `${inStockRate}%`;
+  }
+  if (els.dashboardLowStockCount) {
+    els.dashboardLowStockCount.textContent = `${lowStock.length}`;
+  }
+  if (els.dashboardLowStockBar) {
+    els.dashboardLowStockBar.style.width = `${Math.max(lowStockRate, lowStock.length ? 8 : 0)}%`;
+  }
+  if (els.dashboardOutStockCount) {
+    els.dashboardOutStockCount.textContent = `${outOfStock.length}`;
+  }
+  if (els.dashboardOutStockBar) {
+    els.dashboardOutStockBar.style.width = `${Math.max(outOfStockRate, outOfStock.length ? 8 : 0)}%`;
+  }
+  if (els.dashboardRecentSales) {
+    els.dashboardRecentSales.innerHTML = recentSales.length
+      ? recentSales
+          .map((sale) => {
+            const product = findProduct(sale.sku);
+            return `
+              <article class="list-item">
+                <div>
+                  <strong>${product ? product.name : sale.sku}</strong>
+                  <div class="hint">${formatDate(sale.date)} · ${sale.quantity} item${sale.quantity === 1 ? "" : "s"} · ${sale.channel}</div>
+                </div>
+                <div>
+                  <strong>${formatCurrency(sale.unitPrice * sale.quantity)}</strong>
+                  <div class="hint">${sale.notes || "Venta registrada"}</div>
+                </div>
+              </article>
+            `;
+          })
+          .join("")
+      : "<p>No hay ventas recientes todavia.</p>";
+  }
+  if (els.dashboardAiInsights) {
+    const insights = [
+      lowStock[0]
+        ? {
+            title: `Reponer ${lowStock[0].name}`,
+            body: `${lowStock[0].sku} quedo en ${lowStock[0].stock} unidades. Si vas a pedir impresion, es prioridad.`,
+          }
+        : null,
+      topThemeEntry
+        ? {
+            title: `Empuja ${topThemeEntry.label}`,
+            body: `La tematica con mejor salida actual es ${topThemeEntry.label}. Conviene destacarla en feria y reposicion.`,
+          }
+        : null,
+      topMaterialEntry
+        ? {
+            title: `Sigue fuerte ${topMaterialEntry.label}`,
+            body: `El acabado que mejor rota es ${topMaterialEntry.label}. Vale la pena mantener variedad ahi.`,
+          }
+        : null,
+    ].filter(Boolean);
+
+    els.dashboardAiInsights.innerHTML = insights.length
+      ? insights
+          .map(
+            (item) => `
+              <article class="assistant-block">
+                <strong>${item.title}</strong>
+                <p>${item.body}</p>
+              </article>
+            `,
+          )
+          .join("")
+      : "<p>Todavia no hay suficientes datos para generar insights.</p>";
+  }
 
   renderChart(
     els.topProductsChart,
@@ -1543,6 +1690,82 @@ function renderDashboard() {
         )
         .join("")
     : "<p>No hay alertas de stock por ahora.</p>";
+}
+
+function renderCashflow() {
+  const today = todayString();
+  const salesToday = state.sales.filter((sale) => sale.date === today);
+  const restocksToday = state.restocks.filter((restock) => restock.date === today);
+  const cashIn = salesToday.reduce((sum, sale) => sum + sale.quantity * sale.unitPrice, 0);
+  const cashOut = restocksToday.reduce(
+    (sum, restock) => sum + restock.quantity * restock.unitCost,
+    0,
+  );
+  const balance = cashIn - cashOut;
+
+  const timeline = [
+    ...state.sales.map((sale) => ({
+      type: "in",
+      date: sale.date,
+      createdAt: `${sale.date}T12:00:00`,
+      title: `${findProduct(sale.sku)?.name || sale.sku}`,
+      subtitle: `${sale.channel} · ${sale.quantity} item${sale.quantity === 1 ? "" : "s"}`,
+      amount: sale.quantity * sale.unitPrice,
+      meta: "Venta",
+    })),
+    ...state.restocks.map((restock) => ({
+      type: "out",
+      date: restock.date,
+      createdAt: `${restock.date}T12:00:00`,
+      title: `${findProduct(restock.sku)?.name || restock.sku}`,
+      subtitle: `${restock.batch || "Produccion"} · ${restock.quantity} unidades`,
+      amount: restock.quantity * restock.unitCost,
+      meta: "Costo",
+    })),
+  ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  if (els.cashflowBalance) {
+    els.cashflowBalance.textContent = formatCurrency(balance);
+  }
+  if (els.cashflowBalanceCaption) {
+    els.cashflowBalanceCaption.textContent = balance >= 0
+      ? "El dia viene positivo segun ventas y costos cargados."
+      : "Hoy los costos superan las ventas registradas.";
+  }
+  if (els.cashflowIn) {
+    els.cashflowIn.textContent = formatCurrency(cashIn);
+  }
+  if (els.cashflowOut) {
+    els.cashflowOut.textContent = formatCurrency(cashOut);
+  }
+  if (els.cashflowList) {
+    els.cashflowList.innerHTML = timeline.length
+      ? timeline.slice(0, 10).map((entry) => `
+        <article class="list-item ${entry.type === "out" ? "negative-row" : "positive-row"}">
+          <div>
+            <strong>${entry.title}</strong>
+            <div class="hint">${formatDate(entry.date)} · ${entry.subtitle}</div>
+          </div>
+          <div>
+            <strong>${entry.type === "in" ? "+" : "-"}${formatCurrency(entry.amount)}</strong>
+            <div class="hint">${entry.meta}</div>
+          </div>
+        </article>
+      `).join("")
+      : "<p>Todavia no hay movimientos de caja.</p>";
+  }
+  if (els.cashflowInsight) {
+    els.cashflowInsight.innerHTML = `
+      <article class="assistant-block">
+        <strong>Lectura de caja</strong>
+        <p>${cashIn ? `Hoy ingresaron ${formatCurrency(cashIn)} por ventas registradas.` : "Todavia no hay ventas cargadas hoy."} ${cashOut ? `Los costos del dia suman ${formatCurrency(cashOut)}.` : "No hay costos cargados hoy."}</p>
+      </article>
+      <article class="assistant-block">
+        <strong>Recomendacion simple</strong>
+        <p>${balance >= 0 ? "La caja del dia esta positiva. Si tenes feria, llegas con margen para seguir operando." : "Conviene revisar costos de impresion y reposicion antes de cerrar el dia."}</p>
+      </article>
+    `;
+  }
 }
 
 function renderAssistant() {
