@@ -1258,7 +1258,7 @@ function populateCatalogFilters() {
 
 function renderCatalog() {
   const filteredProducts = getFilteredCatalogProducts();
-  els.catalogCount.textContent = `${filteredProducts.length} modelos visibles`;
+  setElementText(els.catalogCount, `${filteredProducts.length} modelos visibles`);
 
   if (!filteredProducts.length) {
     els.catalogTable.innerHTML = "<p>No hay modelos que coincidan con los filtros.</p>";
@@ -1305,7 +1305,7 @@ function renderCatalogGallery() {
     return normalizeText(`${product.name} ${product.sku}`).includes(search);
   });
 
-  els.catalogGalleryCount.textContent = `${products.length} modelos`;
+  setElementText(els.catalogGalleryCount, `${products.length} modelos`);
   els.catalogGalleryGrid.innerHTML = products.length
     ? products
         .map(
@@ -1331,9 +1331,10 @@ function renderCatalogGallery() {
 function renderQuickSale() {
   const lookupSku = sanitizeSku(els.quickSaleSku.value);
   const previewProduct = findProduct(lookupSku);
-  els.quickSalePricePreview.textContent = previewProduct
-    ? formatCurrency(previewProduct.price)
-    : "$0";
+  setElementText(
+    els.quickSalePricePreview,
+    previewProduct ? formatCurrency(previewProduct.price) : "$0",
+  );
 
   els.quickSalePreview.innerHTML = previewProduct
     ? `
@@ -1406,8 +1407,8 @@ function renderScanner() {
     0,
   );
 
-  els.scannerCartCount.textContent = String(totalUnits);
-  els.scannerCartTotal.textContent = formatCurrency(totalAmount);
+  setElementText(els.scannerCartCount, String(totalUnits));
+  setElementText(els.scannerCartTotal, formatCurrency(totalAmount));
   if (els.scannerCartTotalLarge) {
     els.scannerCartTotalLarge.textContent = formatCurrency(totalAmount);
   }
@@ -1473,7 +1474,7 @@ function renderSales() {
     return matchesSearch && matchesChannel && matchesFrom && matchesTo;
   });
 
-  els.salesCount.textContent = `${filteredSales.length} movimientos`;
+  setElementText(els.salesCount, `${filteredSales.length} movimientos`);
 
   if (!filteredSales.length) {
     els.salesList.innerHTML = "<p>No hay ventas registradas todavia.</p>";
@@ -1520,7 +1521,7 @@ function renderSales() {
 }
 
 function renderRestocks() {
-  els.restockCount.textContent = `${state.restocks.length} movimientos`;
+  setElementText(els.restockCount, `${state.restocks.length} movimientos`);
 
   if (!state.restocks.length) {
     els.restockList.innerHTML = "<p>No hay ingresos registrados todavia.</p>";
@@ -1569,10 +1570,10 @@ function renderDashboard() {
     aggregateSalesBy((sale) => findProduct(sale.sku)?.material || "Sin material"),
   );
 
-  els.statTotalStock.textContent = String(totalStock);
-  els.statActiveProducts.textContent = String(activeProducts);
-  els.statTotalSales.textContent = String(totalSales);
-  els.statRevenue.textContent = formatCurrency(revenue);
+  setElementText(els.statTotalStock, String(totalStock));
+  setElementText(els.statActiveProducts, String(activeProducts));
+  setElementText(els.statTotalSales, String(totalSales));
+  setElementText(els.statRevenue, formatCurrency(revenue));
   if (els.dashboardHealthScore) {
     els.dashboardHealthScore.textContent = `${healthScore}%`;
   }
@@ -1799,7 +1800,7 @@ function renderAssistant() {
     topColorEntry,
     "unidades vendidas",
   );
-  els.assistantLowStockCount.textContent = String(lowStock.length);
+  setElementText(els.assistantLowStockCount, String(lowStock.length));
 
   renderChart(
     els.assistantThemeChart,
@@ -1849,13 +1850,13 @@ function renderAssistant() {
 
 function updateAssistantStat(valueElement, detailElement, entry, suffix) {
   if (!entry) {
-    valueElement.textContent = "-";
-    detailElement.textContent = "Sin datos";
+    setElementText(valueElement, "-");
+    setElementText(detailElement, "Sin datos");
     return;
   }
 
-  valueElement.textContent = entry.label;
-  detailElement.textContent = `${entry.value} ${suffix}`;
+  setElementText(valueElement, entry.label);
+  setElementText(detailElement, `${entry.value} ${suffix}`);
 }
 
 function buildRecommendation(lowStock, topThemeEntry, topMaterialEntry, topColorEntry) {
@@ -1982,7 +1983,10 @@ function findProduct(sku) {
 
 function updateSalePricePreview() {
   const selectedProduct = findProduct(els.saleSku.value);
-  els.salePricePreview.textContent = selectedProduct ? formatCurrency(selectedProduct.price) : "$0";
+  setElementText(
+    els.salePricePreview,
+    selectedProduct ? formatCurrency(selectedProduct.price) : "$0",
+  );
 }
 
 async function renderQrForSku(sku) {
@@ -2609,21 +2613,14 @@ function applyStateSnapshot(snapshot) {
 }
 
 function setSyncStatus(title, detail) {
-  if (!els.syncStatus) {
-    return;
-  }
-
-  els.syncStatus.textContent = `${title}. ${detail}`;
+  setElementText(els.syncStatus, `${title}. ${detail}`);
 }
 
 function updateNetworkStatus() {
-  if (!els.networkStatus) {
-    return;
-  }
-
-  els.networkStatus.textContent = navigator.onLine
-    ? "Estado de red: online"
-    : "Estado de red: offline";
+  setElementText(
+    els.networkStatus,
+    navigator.onLine ? "Estado de red: online" : "Estado de red: offline",
+  );
 }
 
 function seedDemoData() {
@@ -2694,9 +2691,12 @@ function resetAllData() {
 }
 
 function renderLastUpdated() {
-  els.lastUpdated.textContent = state.updatedAt
-    ? `Ultimo cambio guardado: ${formatDateTime(state.updatedAt)}`
-    : "Sin cambios guardados todavia.";
+  setElementText(
+    els.lastUpdated,
+    state.updatedAt
+      ? `Ultimo cambio guardado: ${formatDateTime(state.updatedAt)}`
+      : "Sin cambios guardados todavia.",
+  );
 }
 
 function showToast(message) {
@@ -2706,7 +2706,7 @@ function showToast(message) {
 
   els.toast.classList.remove("visible");
   els.toast.hidden = true;
-  els.toast.textContent = message;
+  setElementText(els.toast, message);
   if (toastTimer) {
     window.clearTimeout(toastTimer);
   }
@@ -2776,7 +2776,7 @@ function openProductDetail(sku) {
     return;
   }
 
-  els.productDetailTitle.textContent = product.name;
+  setElementText(els.productDetailTitle, product.name);
   els.productDetailForm.elements.skuOriginal.value = product.sku;
   els.productDetailForm.elements.sku.value = product.sku;
   els.productDetailForm.elements.name.value = product.name;
@@ -3039,5 +3039,13 @@ function showRuntimeError(message) {
   }
 
   els.runtimeError.hidden = false;
-  els.runtimeError.textContent = `Error de ejecucion: ${message}`;
+  setElementText(els.runtimeError, `Error de ejecucion: ${message}`);
+}
+
+function setElementText(element, value) {
+  if (!element) {
+    return;
+  }
+
+  element.textContent = value;
 }
