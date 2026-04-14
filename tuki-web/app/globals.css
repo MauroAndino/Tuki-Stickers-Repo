@@ -996,6 +996,8 @@ select:focus {
 .cash-split-grid,
 .cashflow-layout,
 .sales-pos-layout,
+.scanner-glance-card,
+.scanner-glance-metric,
 .pos-inline-grid,
 .totals-card,
 .manual-entry-card,
@@ -1197,6 +1199,80 @@ select:focus {
   background: rgba(255, 255, 255, 0.72);
 }
 
+.scanner-glance-card {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  align-items: stretch;
+}
+
+.scanner-glance-metric {
+  gap: 0.3rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.scanner-glance-metric span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.scanner-glance-metric strong {
+  font-size: 1.55rem;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.manual-entry-disclosure {
+  margin-top: 1.15rem;
+}
+
+.manual-entry-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  list-style: none;
+  cursor: pointer;
+}
+
+.manual-entry-summary::-webkit-details-marker {
+  display: none;
+}
+
+.manual-entry-summary strong {
+  display: block;
+  margin-bottom: 0.18rem;
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+}
+
+.manual-entry-summary::after {
+  content: "+";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgba(118, 105, 91, 0.08);
+  color: var(--text);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.manual-entry-disclosure[open] .manual-entry-summary::after {
+  content: "−";
+}
+
+.manual-entry-disclosure[open] .pos-manual-form,
+.manual-entry-disclosure[open] #quick-sale-preview {
+  margin-top: 0.9rem;
+}
+
 .pos-manual-form {
   display: grid;
   gap: 0.8rem;
@@ -1246,6 +1322,13 @@ select:focus {
 .scanner-stepper .ghost-button {
   min-height: 2.65rem;
   padding: 0.55rem 0.8rem;
+}
+
+#scanner-last-read .list-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.8rem;
 }
 
 .totals-card {
@@ -1334,7 +1417,8 @@ select:focus {
   .sales-pos-layout,
   .cashflow-hero,
   .cashflow-layout,
-  .pos-inline-grid {
+  .pos-inline-grid,
+  .scanner-glance-card {
     grid-template-columns: 1fr;
   }
 
@@ -1391,16 +1475,46 @@ select:focus {
   }
 
   .scanner-stage {
-    min-height: 250px;
+    min-height: 228px;
   }
 
   #scanner-video {
-    height: 250px;
+    height: 228px;
   }
 
   .manual-entry-card,
   .totals-card {
     border-radius: 1.25rem;
+  }
+
+  .scanner-glance-card {
+    gap: 0.7rem;
+  }
+
+  .scanner-glance-metric {
+    padding: 0.9rem 0.95rem;
+  }
+
+  .scanner-glance-metric strong {
+    font-size: 1.35rem;
+  }
+
+  #scanner-last-read {
+    min-height: auto;
+  }
+
+  #scanner-last-read .list-item {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .manual-entry-disclosure {
+    margin-top: 0.8rem;
+    padding: 0.9rem;
+  }
+
+  .manual-entry-summary {
+    align-items: flex-start;
   }
 
   .scanner-stepper {

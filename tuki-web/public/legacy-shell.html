@@ -346,44 +346,22 @@
                 </div>
 
                 <div id="scanner-last-read" class="list-card empty-state-inline"></div>
-
-                <section class="manual-entry-card">
-                  <div class="panel-header compact-header">
-                    <h4>Entrada manual</h4>
-                    <span class="hint">Busca por nombre o ID</span>
-                  </div>
-                  <form id="quick-sale-form" class="pos-manual-form">
-                    <input id="quick-sale-sku" name="sku" list="sku-suggestions" placeholder="Escribe nombre o SKU" required />
-                    <button type="submit" class="primary-button">Agregar item</button>
-                    <div class="pos-inline-grid">
-                      <label>
-                        Cantidad
-                        <input
-                          id="quick-sale-quantity"
-                          name="quantity"
-                          type="number"
-                          min="1"
-                          step="1"
-                          value="1"
-                          required
-                        />
-                      </label>
-                      <label>
-                        Canal
-                        <select id="quick-sale-channel" name="channel">
-                          <option value="Feria">Feria</option>
-                          <option value="Local">Local amigo</option>
-                          <option value="Online">Online</option>
-                        </select>
-                      </label>
-                    </div>
-                  </form>
-                  <div id="quick-sale-preview" class="list-card empty-state-inline"></div>
-                  <datalist id="sku-suggestions"></datalist>
+                <section class="scanner-glance-card">
+                  <article class="scanner-glance-metric">
+                    <span>Items en venta</span>
+                    <strong id="scanner-glance-count">0</strong>
+                  </article>
+                  <article class="scanner-glance-metric">
+                    <span>Total actual</span>
+                    <strong id="scanner-glance-total">$0</strong>
+                  </article>
+                  <button id="scanner-jump-cart" type="button" class="secondary-button">Ver carrito</button>
                 </section>
+
+                <datalist id="sku-suggestions"></datalist>
               </section>
 
-              <section class="panel pos-cart-panel">
+              <section class="panel pos-cart-panel" id="scanner-cart-panel">
                 <div class="panel-header">
                   <h3>Current cart</h3>
                   <span class="badge subtle-badge" id="scanner-cart-badge">0 items</span>
@@ -420,6 +398,42 @@
                   <button id="clear-scanner-cart" type="button" class="ghost-button">Vaciar</button>
                   <button id="confirm-scanner-sale" type="button" class="primary-button">Completar venta</button>
                 </div>
+
+                <details id="manual-entry-disclosure" class="manual-entry-card manual-entry-disclosure">
+                  <summary class="manual-entry-summary">
+                    <div>
+                      <strong>Entrada manual</strong>
+                      <span class="hint">Usala solo si el escaner falla</span>
+                    </div>
+                  </summary>
+                  <form id="quick-sale-form" class="pos-manual-form">
+                    <input id="quick-sale-sku" name="sku" list="sku-suggestions" placeholder="Escribe nombre o SKU" required />
+                    <button type="submit" class="primary-button">Agregar item</button>
+                    <div class="pos-inline-grid">
+                      <label>
+                        Cantidad
+                        <input
+                          id="quick-sale-quantity"
+                          name="quantity"
+                          type="number"
+                          min="1"
+                          step="1"
+                          value="1"
+                          required
+                        />
+                      </label>
+                      <label>
+                        Canal
+                        <select id="quick-sale-channel" name="channel">
+                          <option value="Feria">Feria</option>
+                          <option value="Local">Local amigo</option>
+                          <option value="Online">Online</option>
+                        </select>
+                      </label>
+                    </div>
+                  </form>
+                  <div id="quick-sale-preview" class="list-card empty-state-inline"></div>
+                </details>
               </section>
             </div>
           </section>

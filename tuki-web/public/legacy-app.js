@@ -233,16 +233,21 @@ const els = {
   scannerVideo: document.getElementById("scanner-video"),
   scannerStatus: document.getElementById("scanner-status"),
   scannerLastRead: document.getElementById("scanner-last-read"),
+  scannerGlanceCount: document.getElementById("scanner-glance-count"),
+  scannerGlanceTotal: document.getElementById("scanner-glance-total"),
+  scannerJumpCart: document.getElementById("scanner-jump-cart"),
   scannerCart: document.getElementById("scanner-cart"),
   scannerCartCount: document.getElementById("scanner-cart-count"),
   scannerCartTotal: document.getElementById("scanner-cart-total"),
   scannerCartTotalLarge: document.getElementById("scanner-cart-total-large"),
   scannerSubtotal: document.getElementById("scanner-subtotal"),
   scannerCartBadge: document.getElementById("scanner-cart-badge"),
+  scannerCartPanel: document.getElementById("scanner-cart-panel"),
   startScanner: document.getElementById("start-scanner"),
   stopScanner: document.getElementById("stop-scanner"),
   clearScannerCart: document.getElementById("clear-scanner-cart"),
   confirmScannerSale: document.getElementById("confirm-scanner-sale"),
+  manualEntryDisclosure: document.getElementById("manual-entry-disclosure"),
   productTheme: document.getElementById("product-theme"),
   productQrPreview: document.getElementById("product-qr-preview"),
   generateQrButton: document.getElementById("generate-qr-button"),
@@ -310,6 +315,7 @@ async function init() {
   hydrateThemes();
   populateMaterialSelects();
   setTodayDefaults();
+  syncManualEntryDisclosure();
   bindEvents();
   if (!window.location.hash) {
     window.location.hash = "#dashboard";
@@ -348,6 +354,7 @@ function bindEvents() {
   onElement(els.confirmScannerSale, "click", confirmScannerSale);
   onElement(els.scannerCart, "click", handleScannerCartClick);
   onElement(els.scannerCart, "change", handleScannerCartChange);
+  onElement(els.scannerJumpCart, "click", jumpToScannerCart);
   onElement(els.catalogGalleryGrid, "click", handleCatalogGalleryClick);
   onElement(els.closeProductDetail, "click", closeProductDetailModal);
   onElement(els.productDetailModal, "click", handleProductDetailBackdrop);
@@ -361,9 +368,10 @@ function bindEvents() {
   onElement(els.seedButton, "click", seedDemoData);
   onElement(els.resetButton, "click", resetAllData);
   onElement(els.exportButton, "click", exportBackup);
-  onElement(els.importButton, "click", () => els.importFile?.click());
-  onElement(els.importFile, "change", importBackup);
-  onElement(els.undoLastScan, "click", undoLastScannerItem);
+    onElement(els.importButton, "click", () => els.importFile?.click());
+    onElement(els.importFile, "change", importBackup);
+    onElement(els.undoLastScan, "click", undoLastScannerItem);
+    window.addEventListener("resize", syncManualEntryDisclosure);
 
   if (els.quickSaleGrid) {
     els.quickSaleGrid.addEventListener("click", handleQuickSaleClick);
@@ -412,6 +420,14 @@ function onElement(element, eventName, handler) {
   }
 
   element.addEventListener(eventName, handler);
+}
+
+function syncManualEntryDisclosure() {
+  if (!els.manualEntryDisclosure) {
+    return;
+  }
+
+  els.manualEntryDisclosure.open = window.innerWidth > 760;
 }
 
 function bindPress(element, handler) {
@@ -1417,6 +1433,8 @@ function renderScanner() {
 
   setElementText(els.scannerCartCount, String(totalUnits));
   setElementText(els.scannerCartTotal, formatCurrency(totalAmount));
+  setElementText(els.scannerGlanceCount, String(totalUnits));
+  setElementText(els.scannerGlanceTotal, formatCurrency(totalAmount));
   if (els.scannerCartTotalLarge) {
     els.scannerCartTotalLarge.textContent = formatCurrency(totalAmount);
   }
@@ -1425,6 +1443,9 @@ function renderScanner() {
   }
   if (els.scannerCartBadge) {
     els.scannerCartBadge.textContent = `${totalUnits} ${totalUnits === 1 ? "item" : "items"}`;
+  }
+  if (els.scannerJumpCart) {
+    els.scannerJumpCart.disabled = enrichedCart.length === 0;
   }
 
   els.scannerCart.innerHTML = enrichedCart.length
@@ -2085,6 +2106,10 @@ function focusQuickSaleSku() {
     els.quickSaleSku.focus();
     els.quickSaleSku.select();
   });
+}
+
+function jumpToScannerCart() {
+  els.scannerCartPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function loadState() {
