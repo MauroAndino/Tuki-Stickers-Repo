@@ -206,8 +206,6 @@ const els = {
   stockAlerts: document.getElementById("stock-alerts"),
   dashboardHealthScore: document.getElementById("dashboard-health-score"),
   dashboardHealthCaption: document.getElementById("dashboard-health-caption"),
-  dashboardAiInsights: document.getElementById("dashboard-ai-insights"),
-  dashboardRecentSales: document.getElementById("dashboard-recent-sales"),
   dashboardInStockRate: document.getElementById("dashboard-in-stock-rate"),
   dashboardInStockBar: document.getElementById("dashboard-in-stock-bar"),
   dashboardLowStockCount: document.getElementById("dashboard-low-stock-count"),
@@ -243,9 +241,6 @@ const els = {
   scannerCartBadge: document.getElementById("scanner-cart-badge"),
   startScanner: document.getElementById("start-scanner"),
   stopScanner: document.getElementById("stop-scanner"),
-  captureScannerFrame: document.getElementById("capture-scanner-frame"),
-  uploadScannerImage: document.getElementById("upload-scanner-image"),
-  scannerImageFile: document.getElementById("scanner-image-file"),
   clearScannerCart: document.getElementById("clear-scanner-cart"),
   confirmScannerSale: document.getElementById("confirm-scanner-sale"),
   productTheme: document.getElementById("product-theme"),
@@ -278,7 +273,6 @@ const els = {
   cashflowInsight: document.getElementById("cashflow-insight"),
   lastUpdated: document.getElementById("last-updated"),
   syncStatus: document.getElementById("sync-status"),
-  networkStatus: document.getElementById("network-status"),
   statTotalStock: document.getElementById("stat-total-stock"),
   statActiveProducts: document.getElementById("stat-active-products"),
   statTotalSales: document.getElementById("stat-total-sales"),
@@ -288,7 +282,6 @@ const els = {
   exportButton: document.getElementById("export-button"),
   importButton: document.getElementById("import-button"),
   importFile: document.getElementById("import-file"),
-  syncNowButton: document.getElementById("sync-now-button"),
   toast: document.getElementById("toast"),
   runtimeError: document.getElementById("runtime-error"),
   productDetailModal: document.getElementById("product-detail-modal"),
@@ -348,12 +341,11 @@ function bindEvents() {
   els.themeForm.addEventListener("submit", handleThemeSubmit);
   els.saleForm.addEventListener("submit", handleSaleSubmit);
   els.restockForm.addEventListener("submit", handleRestockSubmit);
-  els.quickSaleForm.addEventListener("submit", handleQuickSaleSubmit);
+  if (els.quickSaleForm) {
+    els.quickSaleForm.addEventListener("submit", handleQuickSaleSubmit);
+  }
   els.startScanner.addEventListener("click", startScanner);
   els.stopScanner.addEventListener("click", stopScanner);
-  els.captureScannerFrame.addEventListener("click", captureScannerFrame);
-  els.uploadScannerImage.addEventListener("click", () => els.scannerImageFile.click());
-  els.scannerImageFile.addEventListener("change", handleScannerImageUpload);
   els.clearScannerCart.addEventListener("click", clearScannerCart);
   els.confirmScannerSale.addEventListener("click", confirmScannerSale);
   els.scannerCart.addEventListener("click", handleScannerCartClick);
@@ -373,10 +365,7 @@ function bindEvents() {
   els.exportButton.addEventListener("click", exportBackup);
   els.importButton.addEventListener("click", () => els.importFile.click());
   els.importFile.addEventListener("change", importBackup);
-  els.syncNowButton.addEventListener("click", handleManualSync);
   els.undoLastScan.addEventListener("click", undoLastScannerItem);
-  window.addEventListener("online", updateNetworkStatus);
-  window.addEventListener("offline", updateNetworkStatus);
 
   if (els.quickSaleGrid) {
     els.quickSaleGrid.addEventListener("click", handleQuickSaleClick);
@@ -400,6 +389,9 @@ function bindEvents() {
     els.salesDateFrom,
     els.salesDateTo,
   ].forEach((element) => {
+    if (!element) {
+      return;
+    }
     element.addEventListener("input", render);
     element.addEventListener("change", render);
   });
@@ -1329,6 +1321,16 @@ function renderCatalogGallery() {
 }
 
 function renderQuickSale() {
+  if (
+    !els.quickSaleSku ||
+    !els.quickSalePricePreview ||
+    !els.quickSalePreview ||
+    !els.quickSaleChannel ||
+    !els.quickSaleQuantity
+  ) {
+    return;
+  }
+
   const lookupSku = sanitizeSku(els.quickSaleSku.value);
   const previewProduct = findProduct(lookupSku);
   setElementText(
@@ -1600,63 +1602,6 @@ function renderDashboard() {
   if (els.dashboardOutStockBar) {
     els.dashboardOutStockBar.style.width = `${Math.max(outOfStockRate, outOfStock.length ? 8 : 0)}%`;
   }
-  if (els.dashboardRecentSales) {
-    els.dashboardRecentSales.innerHTML = recentSales.length
-      ? recentSales
-          .map((sale) => {
-            const product = findProduct(sale.sku);
-            return `
-              <article class="list-item">
-                <div>
-                  <strong>${product ? product.name : sale.sku}</strong>
-                  <div class="hint">${formatDate(sale.date)} · ${sale.quantity} item${sale.quantity === 1 ? "" : "s"} · ${sale.channel}</div>
-                </div>
-                <div>
-                  <strong>${formatCurrency(sale.unitPrice * sale.quantity)}</strong>
-                  <div class="hint">${sale.notes || "Venta registrada"}</div>
-                </div>
-              </article>
-            `;
-          })
-          .join("")
-      : "<p>No hay ventas recientes todavia.</p>";
-  }
-  if (els.dashboardAiInsights) {
-    const insights = [
-      lowStock[0]
-        ? {
-            title: `Reponer ${lowStock[0].name}`,
-            body: `${lowStock[0].sku} quedo en ${lowStock[0].stock} unidades. Si vas a pedir impresion, es prioridad.`,
-          }
-        : null,
-      topThemeEntry
-        ? {
-            title: `Empuja ${topThemeEntry.label}`,
-            body: `La tematica con mejor salida actual es ${topThemeEntry.label}. Conviene destacarla en feria y reposicion.`,
-          }
-        : null,
-      topMaterialEntry
-        ? {
-            title: `Sigue fuerte ${topMaterialEntry.label}`,
-            body: `El acabado que mejor rota es ${topMaterialEntry.label}. Vale la pena mantener variedad ahi.`,
-          }
-        : null,
-    ].filter(Boolean);
-
-    els.dashboardAiInsights.innerHTML = insights.length
-      ? insights
-          .map(
-            (item) => `
-              <article class="assistant-block">
-                <strong>${item.title}</strong>
-                <p>${item.body}</p>
-              </article>
-            `,
-          )
-          .join("")
-      : "<p>Todavia no hay suficientes datos para generar insights.</p>";
-  }
-
   renderChart(
     els.topProductsChart,
     aggregateSalesBy((sale) => findProduct(sale.sku)?.name || sale.sku),

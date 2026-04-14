@@ -17,20 +17,6 @@
           <a class="nav-link" href="#assistant" data-view="assistant">Asistente</a>
         </nav>
 
-        <section class="panel panel-muted">
-          <h2>Estado</h2>
-          <p id="last-updated">Sin cambios guardados todavia.</p>
-          <p id="sync-status" class="hint">Modo local. Sin sincronizacion remota.</p>
-          <p id="network-status" class="hint">Estado de red: verificando...</p>
-          <div class="action-stack">
-            <button id="sync-now-button" class="primary-button">Sincronizar ahora</button>
-            <button id="export-button" class="secondary-button">Exportar respaldo</button>
-            <button id="import-button" class="secondary-button">Importar respaldo</button>
-            <button id="seed-button" class="secondary-button">Cargar demo</button>
-            <button id="reset-button" class="ghost-button">Resetear datos</button>
-            <input id="import-file" type="file" accept="application/json" hidden />
-          </div>
-        </section>
       </aside>
 
       <main class="main-content">
@@ -78,25 +64,6 @@
           </section>
 
           <div class="dashboard-mobile-grid">
-            <section class="panel insight-panel">
-              <div class="panel-header">
-                <div>
-                  <h3>AI Insights</h3>
-                  <span class="hint">Analisis rapido del dia</span>
-                </div>
-                <span class="badge subtle-badge">Realtime</span>
-              </div>
-              <div id="dashboard-ai-insights" class="insight-stack empty-state-inline"></div>
-            </section>
-
-            <section class="panel dashboard-sales-panel">
-              <div class="panel-header">
-                <h3>Ventas recientes</h3>
-                <span class="hint">Lo ultimo que se movio</span>
-              </div>
-              <div id="dashboard-recent-sales" class="list-card empty-state-inline"></div>
-            </section>
-
             <section class="panel stock-health-panel">
               <div class="panel-header">
                 <h3>Salud del stock</h3>
@@ -335,32 +302,12 @@
           </header>
 
           <div class="section-tabs">
-            <a class="section-tab active" href="#sales-fast" data-tab-group="sales" data-tab="sales-fast">Venta rapida</a>
             <a class="section-tab" href="#sales-scan" data-tab-group="sales" data-tab="sales-scan">Escanear</a>
             <a class="section-tab" href="#sales-manual" data-tab-group="sales" data-tab="sales-manual">Venta manual</a>
             <a class="section-tab" href="#sales-history" data-tab-group="sales" data-tab="sales-history">Ultimas ventas</a>
           </div>
 
-          <section id="sales-fast" class="tab-panel active" data-tab-group="sales">
-            <section class="panel">
-              <div class="panel-header">
-                <h3>Modo rapido</h3>
-                <span class="hint">Atajos para escritorio y revision</span>
-              </div>
-              <div class="assistant-report">
-                <article class="assistant-block">
-                  <strong>En celular, el foco esta en POS</strong>
-                  <p>Usa la pestaña <strong>Escanear</strong> para vender en ferias con camara, entrada manual y carrito en una sola pantalla.</p>
-                </article>
-                <article class="assistant-block">
-                  <strong>En escritorio, esta vista queda como apoyo</strong>
-                  <p>Sirve para consultar el flujo de venta, revisar movimientos recientes y dejar la operacion rapida concentrada en la pantalla POS.</p>
-                </article>
-              </div>
-            </section>
-          </section>
-
-          <section id="sales-scan" class="tab-panel" data-tab-group="sales">
+          <section id="sales-scan" class="tab-panel active" data-tab-group="sales">
             <div class="sales-pos-layout">
               <section class="panel pos-scanner-panel">
                 <div class="panel-header">
@@ -383,10 +330,7 @@
                   <div class="scanner-actions">
                     <button id="start-scanner" type="button" class="primary-button">Iniciar camara</button>
                     <button id="stop-scanner" type="button" class="ghost-button">Detener</button>
-                    <button id="capture-scanner-frame" type="button" class="secondary-button">Capturar y leer</button>
-                    <button id="upload-scanner-image" type="button" class="secondary-button">Subir imagen</button>
                   </div>
-                  <input id="scanner-image-file" type="file" accept="image/*" hidden />
                 </div>
 
                 <div class="scanner-stage">

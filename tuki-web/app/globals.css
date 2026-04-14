@@ -178,22 +178,13 @@ img {
   border-radius: 1.9rem;
 }
 
-.panel-muted {
-  margin-top: auto;
-  background: rgba(255, 255, 255, 0.7);
-}
-
-.panel-muted h2,
+.section-header h2,
 .section-header h2,
 .panel h3,
 .panel h4,
 .stat-card strong {
   margin: 0;
   letter-spacing: -0.04em;
-}
-
-.panel-muted h2 {
-  font-size: 1.05rem;
 }
 
 .action-stack {
@@ -1128,22 +1119,6 @@ select:focus {
   color: inherit;
 }
 
-.insight-panel {
-  background: linear-gradient(160deg, #7e96d9 0%, #8ba4e3 100%);
-  color: white;
-}
-
-.insight-panel .hint,
-.insight-panel .panel-header span,
-.insight-panel .assistant-block p {
-  color: rgba(255, 255, 255, 0.84);
-}
-
-.insight-panel .assistant-block {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.12);
-}
-
 .assistant-block {
   display: grid;
   gap: 0.4rem;
@@ -1347,21 +1322,6 @@ select:focus {
     display: none;
   }
 
-  .panel-muted {
-    order: 3;
-    margin-top: 0.2rem;
-    padding: 0.95rem;
-    border-radius: 1.35rem;
-  }
-
-  .panel-muted h2 {
-    font-size: 0.92rem;
-  }
-
-  .action-stack {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   #catalog .section-tab[data-tab="catalog-themes"],
   #catalog .section-tab[data-tab="catalog-filters"],
   #catalog .section-tab[data-tab="catalog-new"] {
@@ -1409,12 +1369,10 @@ select:focus {
     order: 2;
   }
 
-  #sales-fast,
   #sales-manual {
     display: none !important;
   }
 
-  #sales .section-tab[data-tab="sales-fast"],
   #sales .section-tab[data-tab="sales-manual"],
   #sales .section-tab[data-tab="sales-history"] {
     display: none;
