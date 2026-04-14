@@ -238,9 +238,7 @@ const els = {
   scannerLastRead: document.getElementById("scanner-last-read"),
   scannerJumpCart: document.getElementById("scanner-jump-cart"),
   scannerCart: document.getElementById("scanner-cart"),
-  scannerCartDrawer: document.getElementById("scanner-cart-drawer"),
   scannerCartTotal: document.getElementById("scanner-cart-total"),
-  scannerCartTotalLarge: document.getElementById("scanner-cart-total-large"),
   scannerSubtotal: document.getElementById("scanner-subtotal"),
   scannerCartBadge: document.getElementById("scanner-cart-badge"),
   scannerCartPanel: document.getElementById("scanner-cart-panel"),
@@ -317,7 +315,6 @@ async function init() {
   populateMaterialSelects();
   setTodayDefaults();
   syncManualEntryDisclosure();
-  syncScannerCartDrawer();
   bindEvents();
   if (!window.location.hash) {
     window.location.hash = "#dashboard";
@@ -374,7 +371,6 @@ function bindEvents() {
     onElement(els.importFile, "change", importBackup);
     onElement(els.undoLastScan, "click", undoLastScannerItem);
     window.addEventListener("resize", syncManualEntryDisclosure);
-    window.addEventListener("resize", () => syncScannerCartDrawer());
 
   if (els.quickSaleGrid) {
     els.quickSaleGrid.addEventListener("click", handleQuickSaleClick);
@@ -431,26 +427,6 @@ function syncManualEntryDisclosure() {
   }
 
   els.manualEntryDisclosure.open = window.innerWidth > 760;
-}
-
-function syncScannerCartDrawer(forceOpen = false) {
-  if (!els.scannerCartDrawer) {
-    return;
-  }
-
-  if (window.innerWidth > 760) {
-    els.scannerCartDrawer.open = true;
-    return;
-  }
-
-  if (forceOpen) {
-    els.scannerCartDrawer.open = true;
-    return;
-  }
-
-  if (!scannerState.cart.length) {
-    els.scannerCartDrawer.open = false;
-  }
 }
 
 function bindPress(element, handler) {
@@ -956,7 +932,6 @@ function processDetectedCode(rawValue) {
     return;
   }
 
-  syncScannerCartDrawer(true);
   pulseScannerFeedback();
   setScannerLastRead(code, product, "Sticker agregado a la venta.");
 }
@@ -1474,9 +1449,6 @@ function renderScanner() {
   );
 
   setElementText(els.scannerCartTotal, formatCurrency(totalAmount));
-  if (els.scannerCartTotalLarge) {
-    els.scannerCartTotalLarge.textContent = formatCurrency(totalAmount);
-  }
   if (els.scannerSubtotal) {
     els.scannerSubtotal.textContent = formatCurrency(totalAmount);
   }
@@ -1486,7 +1458,6 @@ function renderScanner() {
   if (els.scannerJumpCart) {
     els.scannerJumpCart.disabled = enrichedCart.length === 0;
   }
-  syncScannerCartDrawer();
 
   els.scannerCart.innerHTML = enrichedCart.length
     ? enrichedCart
@@ -2156,8 +2127,7 @@ function focusQuickSaleSku() {
 }
 
 function jumpToScannerCart() {
-  syncScannerCartDrawer(true);
-  els.scannerCartPanel?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  els.scannerCartPanel?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function loadState() {

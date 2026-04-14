@@ -1189,10 +1189,6 @@ select:focus {
   gap: 1rem;
 }
 
-.pos-cart-panel {
-  padding: 0.85rem;
-}
-
 .manual-entry-card {
   margin-top: 1rem;
   padding: 1rem;
@@ -1278,60 +1274,6 @@ select:focus {
   display: grid;
   justify-items: end;
   gap: 0.65rem;
-}
-
-.scanner-cart-drawer {
-  display: grid;
-  gap: 0.9rem;
-}
-
-.scanner-cart-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  list-style: none;
-  cursor: pointer;
-}
-
-.scanner-cart-summary::-webkit-details-marker {
-  display: none;
-}
-
-.scanner-cart-summary-copy {
-  display: grid;
-  gap: 0.3rem;
-}
-
-.scanner-cart-summary-copy strong {
-  font-size: 1.02rem;
-  letter-spacing: -0.03em;
-}
-
-.scanner-cart-summary-total {
-  display: grid;
-  justify-items: end;
-  gap: 0.2rem;
-}
-
-.scanner-cart-summary-total span {
-  color: var(--muted);
-  font-size: 0.74rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.scanner-cart-summary-total strong {
-  font-size: 1.35rem;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  color: #315ac9;
-}
-
-.scanner-cart-drawer-body {
-  display: grid;
-  gap: 0.9rem;
 }
 
 .scanner-item-meta {
@@ -1485,18 +1427,6 @@ select:focus {
 
   .pos-cart-panel {
     order: 2;
-    position: fixed;
-    left: 1rem;
-    right: 1rem;
-    bottom: 5.6rem;
-    z-index: 40;
-    border-radius: 1.45rem;
-    background: rgba(255, 255, 255, 0.96);
-    box-shadow: 0 18px 40px rgba(31, 21, 13, 0.16);
-  }
-
-  #sales-scan {
-    padding-bottom: 16.5rem;
   }
 
   #sales-manual {
@@ -1539,39 +1469,6 @@ select:focus {
 
   .scanner-quick-actions .secondary-button {
     width: 100%;
-  }
-
-  .pos-cart-panel .badge {
-    min-height: 2.1rem;
-    padding: 0 0.75rem;
-    font-size: 0.72rem;
-  }
-
-  .scanner-cart-drawer {
-    gap: 0;
-  }
-
-  .scanner-cart-summary {
-    align-items: center;
-  }
-
-  .scanner-cart-summary-copy {
-    gap: 0.18rem;
-  }
-
-  .scanner-cart-summary-total strong {
-    font-size: 1.15rem;
-  }
-
-  .scanner-cart-drawer-body {
-    margin-top: 0.9rem;
-    max-height: 40vh;
-    overflow: auto;
-    padding-right: 0.1rem;
-  }
-
-  .scanner-cart-drawer:not([open]) .scanner-cart-drawer-body {
-    display: none;
   }
 
   #scanner-last-read {

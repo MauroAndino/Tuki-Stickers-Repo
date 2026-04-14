@@ -354,39 +354,29 @@
               </section>
 
               <section class="panel pos-cart-panel" id="scanner-cart-panel">
-                <details id="scanner-cart-drawer" class="scanner-cart-drawer" open>
-                  <summary class="scanner-cart-summary">
-                    <div class="scanner-cart-summary-copy">
-                      <strong>Current cart</strong>
-                      <span id="scanner-cart-badge" class="badge subtle-badge">0 items</span>
-                    </div>
-                    <div class="scanner-cart-summary-total">
-                      <span>Total</span>
-                      <strong id="scanner-cart-total">$0</strong>
-                    </div>
-                  </summary>
+                <div class="panel-header">
+                  <h3>Current cart</h3>
+                  <span class="badge subtle-badge" id="scanner-cart-badge">0 items</span>
+                </div>
 
-                  <div class="scanner-cart-drawer-body">
-                    <div id="scanner-cart" class="list-card empty-state-inline"></div>
+                <div id="scanner-cart" class="list-card empty-state-inline"></div>
 
-                    <div class="totals-card">
-                      <div class="total-row">
-                        <span>Subtotal</span>
-                        <strong id="scanner-subtotal">$0</strong>
-                      </div>
-                      <div class="total-row total-row-strong">
-                        <span>Total</span>
-                        <strong id="scanner-cart-total-large">$0</strong>
-                      </div>
-                    </div>
-
-                    <div class="scanner-actions footer-actions pos-footer-actions">
-                      <button id="undo-last-scan" type="button" class="secondary-button">Deshacer ultimo</button>
-                      <button id="clear-scanner-cart" type="button" class="ghost-button">Vaciar</button>
-                      <button id="confirm-scanner-sale" type="button" class="primary-button">Completar venta</button>
-                    </div>
+                <div class="totals-card">
+                  <div class="total-row">
+                    <span>Subtotal</span>
+                    <strong id="scanner-subtotal">$0</strong>
                   </div>
-                </details>
+                  <div class="total-row total-row-strong">
+                    <span>Total</span>
+                    <strong id="scanner-cart-total">$0</strong>
+                  </div>
+                </div>
+
+                <div class="scanner-actions footer-actions pos-footer-actions">
+                  <button id="undo-last-scan" type="button" class="secondary-button">Deshacer ultimo</button>
+                  <button id="clear-scanner-cart" type="button" class="ghost-button">Vaciar</button>
+                  <button id="confirm-scanner-sale" type="button" class="primary-button">Completar venta</button>
+                </div>
 
                 <details id="manual-entry-disclosure" class="manual-entry-card manual-entry-disclosure">
                   <summary class="manual-entry-summary">
