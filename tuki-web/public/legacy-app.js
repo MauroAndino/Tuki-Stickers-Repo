@@ -885,14 +885,14 @@ async function startScanner() {
     scannerState.consecutiveMisses = 0;
     scannerState.globalCooldownUntil = 0;
     ensureScannerCanvas();
-    setScannerStatus("Camara activa", "Escaner QR listo para leer en tiempo real.");
+    setScannerStatus("Cámara activa", "Escáner QR listo para leer en tiempo real.");
     scanFrame();
   } catch (error) {
     console.error(error);
-    setScannerStatus(
-      "No pude iniciar la camara",
-      `${error?.name || "Error"}${error?.message ? `: ${error.message}` : ""}`,
-    );
+      setScannerStatus(
+        "No pude iniciar la cámara",
+        `${error?.name || "Error"}${error?.message ? `: ${error.message}` : ""}`,
+      );
   }
 }
 
@@ -916,7 +916,7 @@ function stopScanner() {
   if (els.scannerVideo) {
     els.scannerVideo.srcObject = null;
   }
-  setScannerStatus("Camara inactiva", "Inicia la camara y apunta al codigo del sticker.");
+  setScannerStatus("Cámara inactiva", "Inicia la cámara y apunta al código del sticker.");
 }
 
 async function scanFrame() {
@@ -972,7 +972,7 @@ function processDetectedCode(rawValue) {
 
   const product = findProduct(code);
   if (!product) {
-    setScannerLastRead(code, null, "Codigo no encontrado en catalogo.");
+    setScannerLastRead(code, null, "Código no encontrado en catálogo.");
     renderScanner();
     return;
   }
@@ -984,7 +984,7 @@ function processDetectedCode(rawValue) {
   }
 
   pulseScannerFeedback();
-  setScannerLastRead(code, product, "Sticker agregado a la venta.");
+  setScannerLastRead(code, product, "Producto agregado.");
 }
 
 function addScannerItem(sku) {
@@ -1504,7 +1504,7 @@ function renderScanner() {
     els.scannerSubtotal.textContent = formatCurrency(totalAmount);
   }
   if (els.scannerCartBadge) {
-    els.scannerCartBadge.textContent = `${totalUnits} ${totalUnits === 1 ? "item" : "items"}`;
+    els.scannerCartBadge.textContent = `${totalUnits} ${totalUnits === 1 ? "producto" : "productos"}`;
   }
   if (els.scannerJumpCart) {
     els.scannerJumpCart.disabled = enrichedCart.length === 0;
@@ -1517,7 +1517,7 @@ function renderScanner() {
             <article class="list-item">
               <div>
                 <strong>${item.product.name}</strong>
-                <div class="hint">SKU ${item.product.sku} · ${item.product.material}</div>
+                <div class="hint">SKU ${item.product.sku} / ${item.product.material}</div>
               </div>
               <div class="scanner-cart-controls">
                 <div class="scanner-item-meta">
@@ -1528,7 +1528,7 @@ function renderScanner() {
                   <button type="button" class="ghost-button" data-stepper-action="minus" data-quantity-sku="${item.product.sku}">-</button>
                   <input
                     type="number"
-                    min="0"
+                    min="1"
                     max="${item.product.stock}"
                     step="1"
                     value="${item.quantity}"
@@ -1542,10 +1542,11 @@ function renderScanner() {
           `,
         )
         .join("")
-    : "<p>No hay stickers escaneados todavia.</p>";
+    : "<p>No hay productos en el carrito.</p>";
 
   if (!els.scannerLastRead.innerHTML.trim()) {
-    els.scannerLastRead.innerHTML = "<p>El ultimo codigo escaneado aparecera aqui.</p>";
+    els.scannerLastRead.classList.remove("is-success", "is-warning");
+    els.scannerLastRead.innerHTML = "<p>Escaneá un sticker para empezar la venta.</p>";
   }
 }
 
@@ -2150,7 +2151,7 @@ function setScannerStatus(title, detail) {
     return;
   }
 
-  const shouldHide = title === "Camara inactiva" || title === "Camara activa";
+  const shouldHide = title === "Cámara inactiva" || title === "Cámara activa";
   if (shouldHide) {
     els.scannerStatus.hidden = true;
     els.scannerStatus.innerHTML = "";
@@ -2166,8 +2167,11 @@ function setScannerLastRead(code, product, message) {
     ? scannerState.cart.find((item) => item.sku === product.sku)
     : null;
   const secondaryLine = product
-    ? `${product.sku} · ${cartItem ? `${cartItem.quantity} en carrito` : "Aun no agregado"}`
-    : "Codigo no identificado";
+    ? `${product.sku} / ${cartItem ? `${cartItem.quantity} en carrito` : "Aún no agregado"}`
+    : "Código no identificado";
+
+  els.scannerLastRead.classList.toggle("is-success", Boolean(product));
+  els.scannerLastRead.classList.toggle("is-warning", !product && Boolean(code));
 
   els.scannerLastRead.innerHTML = `
       <article class="list-item">

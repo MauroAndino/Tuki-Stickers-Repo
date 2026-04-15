@@ -345,20 +345,16 @@
 
                 <div id="scanner-status" class="inline-note scanner-status-minimal" hidden></div>
 
-                <div id="scanner-last-read" class="list-card empty-state-inline"></div>
-                <div class="scanner-quick-actions">
-                  <button id="scanner-jump-cart" type="button" class="secondary-button">Ver carrito</button>
-                </div>
-
                 <datalist id="sku-suggestions"></datalist>
               </section>
 
               <section class="panel pos-cart-panel bento-card bento-card-white" id="scanner-cart-panel">
                 <div class="panel-header">
-                  <h3>Current cart</h3>
-                  <span class="badge subtle-badge" id="scanner-cart-badge">0 items</span>
+                  <h3>Carrito actual</h3>
+                  <span class="badge subtle-badge" id="scanner-cart-badge">0 productos</span>
                 </div>
 
+                <div id="scanner-last-read" class="list-card scanner-last-read-card empty-state-inline"></div>
                 <div id="scanner-cart" class="list-card empty-state-inline"></div>
 
                 <div class="totals-card">
@@ -387,7 +383,7 @@
                   </summary>
                   <form id="quick-sale-form" class="pos-manual-form">
                     <input id="quick-sale-sku" name="sku" list="sku-suggestions" placeholder="Escribe nombre o SKU" required />
-                    <button type="submit" class="primary-button">Agregar item</button>
+                    <button type="submit" class="primary-button">Agregar</button>
                     <div class="pos-inline-grid">
                       <label>
                         Cantidad
