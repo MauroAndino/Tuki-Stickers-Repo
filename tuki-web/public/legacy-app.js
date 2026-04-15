@@ -183,6 +183,7 @@ let currentQrValue = "";
 let toastTimer = null;
 let lastCreatedSku = "";
 let productPreviewImageDataUrl = "";
+const selectedCatalogSkus = new Set();
 
 const els = {
   navLinks: [...document.querySelectorAll(".nav-link")],
@@ -201,6 +202,7 @@ const els = {
   catalogGalleryGrid: document.getElementById("catalog-gallery-grid"),
   catalogGallerySearch: document.getElementById("catalog-gallery-search"),
   catalogGalleryCount: document.getElementById("catalog-gallery-count"),
+  catalogSortOrder: document.getElementById("catalog-sort-order"),
   catalogToolbarToggles: [...document.querySelectorAll("[data-toolbar-panel]")],
   catalogUtilityPanels: [...document.querySelectorAll(".catalog-utility-panel")],
   catalogFilterPanel: document.getElementById("catalog-filter-panel"),
@@ -381,6 +383,7 @@ function bindEvents() {
   onElement(els.mobileNavClose, "click", closeMobileNav);
   onElement(els.mobileNavBackdrop, "click", closeMobileNav);
   onElement(els.catalogGalleryGrid, "click", handleCatalogGalleryClick);
+  onElement(els.catalogGalleryGrid, "change", handleCatalogInventoryChange);
   els.catalogToolbarToggles.forEach((button) => {
     bindPress(button, () => toggleCatalogUtilityPanel(button.dataset.toolbarPanel));
   });
@@ -421,6 +424,7 @@ function bindEvents() {
     els.catalogSearch,
     els.catalogGallerySearch,
     els.catalogThemeFilter,
+    els.catalogSortOrder,
     els.catalogMaterialFilter,
     els.catalogStockFilter,
     els.catalogDateFrom,
@@ -444,7 +448,9 @@ function bindEvents() {
 
   els.clearCatalogFilters.addEventListener("click", () => {
     els.catalogSearch.value = "";
-    clearMultiSelect(els.catalogThemeFilter);
+    if (els.catalogThemeFilter) {
+      els.catalogThemeFilter.value = "all";
+    }
     clearMultiSelect(els.catalogMaterialFilter);
     clearMultiSelect(els.catalogStockFilter);
     els.catalogDateFrom.value = "";
@@ -1488,12 +1494,12 @@ function renderSelects() {
 }
 
 function renderThemes() {
-  const selectedThemes = getSelectedValues(els.catalogThemeFilter);
+  const selectedTheme = els.catalogThemeFilter?.value || "all";
   els.themeList.innerHTML = state.themes.length
     ? state.themes
         .map(
           (theme) =>
-            `<div class="theme-chip ${selectedThemes.includes(theme) ? "active" : ""}" data-theme-chip="${theme}">
+            `<div class="theme-chip ${selectedTheme === theme ? "active" : ""}" data-theme-chip="${theme}">
               <button type="button" class="theme-chip-label" data-theme-chip="${theme}">${theme}</button>
               <button type="button" class="theme-chip-remove" data-theme-remove="${theme}" aria-label="Eliminar ${theme}">×</button>
             </div>`,
@@ -1505,19 +1511,20 @@ function renderThemes() {
 function populateCatalogFilters() {
   const themes = [...new Set(state.products.map((product) => product.theme))].sort();
   const materials = [...new Set(state.products.map((product) => product.material))].sort();
-  const selectedThemes = getSelectedValues(els.catalogThemeFilter);
+  const selectedTheme = els.catalogThemeFilter?.value || "all";
   const selectedMaterials = getSelectedValues(els.catalogMaterialFilter);
   const selectedStockStates = getSelectedValues(els.catalogStockFilter);
 
-  els.catalogThemeFilter.innerHTML = themes
-    .map((theme) => `<option value="${theme}">${theme}</option>`)
-    .join("");
+  els.catalogThemeFilter.innerHTML = [
+    '<option value="all">Filtrar</option>',
+    ...themes.map((theme) => `<option value="${theme}">${theme}</option>`),
+  ].join("");
   els.catalogMaterialFilter.innerHTML = materials
     .map((material) => `<option value="${material}">${material}</option>`)
     .join("");
 
   [...els.catalogThemeFilter.options].forEach((option) => {
-    option.selected = selectedThemes.includes(option.value);
+    option.selected = option.value === selectedTheme;
   });
   [...els.catalogMaterialFilter.options].forEach((option) => {
     option.selected = selectedMaterials.includes(option.value);
@@ -1568,7 +1575,7 @@ function renderCatalog() {
 
 function renderCatalogGallery() {
   const search = normalizeText(els.catalogGallerySearch.value);
-  const products = getFilteredCatalogProducts().filter((product) => {
+  const products = sortCatalogProducts(getFilteredCatalogProducts()).filter((product) => {
     if (!search) {
       return true;
     }
@@ -1612,6 +1619,238 @@ function renderCatalogGallery() {
         )
         .join("")
     : "<p>No hay stickers que coincidan con esa busqueda.</p>";
+}
+
+function sortCatalogProducts(products) {
+  const sortOrder = els.catalogSortOrder?.value || "name-asc";
+  const sortedProducts = [...products];
+
+  sortedProducts.sort((left, right) => {
+    if (sortOrder === "name-desc") {
+      return right.name.localeCompare(left.name);
+    }
+    if (sortOrder === "stock-desc") {
+      return right.stock - left.stock || left.name.localeCompare(right.name);
+    }
+    if (sortOrder === "stock-asc") {
+      return left.stock - right.stock || left.name.localeCompare(right.name);
+    }
+    if (sortOrder === "price-desc") {
+      return right.price - left.price || left.name.localeCompare(right.name);
+    }
+    if (sortOrder === "price-asc") {
+      return left.price - right.price || left.name.localeCompare(right.name);
+    }
+    return left.name.localeCompare(right.name);
+  });
+
+  return sortedProducts;
+}
+
+function getInventoryStockMeta(stock) {
+  if (stock === 0) {
+    return {
+      label: "Sin stock",
+      badgeClass: "danger",
+      rowClass: "is-out",
+    };
+  }
+
+  if (stock <= 5) {
+    return {
+      label: `${stock} u.`,
+      badgeClass: "warning",
+      rowClass: "is-low",
+    };
+  }
+
+  return {
+    label: `${stock} u.`,
+    badgeClass: "success",
+    rowClass: "is-good",
+  };
+}
+
+function renderCatalogGallery() {
+  const search = normalizeText(els.catalogGallerySearch?.value || "");
+  const products = sortCatalogProducts(
+    getFilteredCatalogProducts().filter((product) =>
+      !search
+        ? true
+        : normalizeText(`${product.name} ${product.sku} ${product.tags || ""}`).includes(search),
+    ),
+  );
+
+  setElementText(els.catalogGalleryCount, `${products.length} productos`);
+
+  if (!products.length) {
+    els.catalogGalleryGrid.innerHTML =
+      '<div class="inventory-empty-state"><strong>No hay stickers que coincidan con esa búsqueda.</strong><span>Prueba con otro nombre, SKU o filtro.</span></div>';
+    return;
+  }
+
+  const allSelected =
+    products.length > 0 && products.every((product) => selectedCatalogSkus.has(product.sku));
+
+  els.catalogGalleryGrid.innerHTML = `
+    <div class="inventory-table-scroll">
+      <table class="inventory-table">
+        <thead>
+          <tr>
+            <th class="inventory-checkbox-col">
+              <input type="checkbox" data-select-all aria-label="Seleccionar todos" ${allSelected ? "checked" : ""} />
+            </th>
+            <th>Imagen</th>
+            <th>Producto</th>
+            <th>Stock</th>
+            <th>Precio</th>
+            <th class="inventory-actions-col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${products
+            .map((product) => {
+              const stockMeta = getInventoryStockMeta(product.stock);
+              const compactTags = [
+                product.theme,
+                product.material,
+                ...(product.tags
+                  ? product.tags
+                      .split(",")
+                      .map((tag) => tag.trim())
+                      .filter(Boolean)
+                      .slice(0, 2)
+                  : []),
+              ]
+                .filter(Boolean)
+                .slice(0, 4);
+
+              return `
+                <tr class="inventory-row ${sanitizeSku(product.sku) === sanitizeSku(lastCreatedSku) ? "is-new" : ""}">
+                  <td class="inventory-checkbox-col">
+                    <input type="checkbox" data-select-sku="${product.sku}" aria-label="Seleccionar ${product.name}" ${selectedCatalogSkus.has(product.sku) ? "checked" : ""} />
+                  </td>
+                  <td>
+                    <button type="button" class="inventory-thumb-button" data-open-product="${product.sku}" aria-label="Abrir ${product.name}">
+                      <div class="inventory-thumb ${stockMeta.rowClass}">
+                        ${renderProductImage(product)}
+                      </div>
+                    </button>
+                  </td>
+                  <td>
+                    <div class="inventory-product-cell">
+                      <button type="button" class="inventory-product-link" data-open-product="${product.sku}">${product.name}</button>
+                      <div class="inventory-product-meta">${product.sku}</div>
+                      <div class="inventory-chip-row">
+                        ${compactTags.map((tag) => `<span class="inventory-chip">${tag}</span>`).join("")}
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="inventory-stock ${stockMeta.badgeClass}">${stockMeta.label}</span>
+                  </td>
+                  <td>
+                    <label class="inventory-price-field" aria-label="Precio de ${product.name}">
+                      <span>$</span>
+                      <input type="number" min="0" step="1" value="${product.price}" data-price-sku="${product.sku}" />
+                    </label>
+                  </td>
+                  <td class="inventory-actions-col">
+                    <div class="inventory-row-actions">
+                      <button type="button" class="inventory-action-button" data-card-action="edit" data-sku="${product.sku}" aria-label="Editar ${product.name}">✎</button>
+                      <button type="button" class="inventory-action-button" data-row-action="duplicate" data-sku="${product.sku}" aria-label="Duplicar ${product.name}">⧉</button>
+                      <button type="button" class="inventory-action-button danger" data-card-action="delete" data-sku="${product.sku}" aria-label="Eliminar ${product.name}">🗑</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            })
+            .join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function handleCatalogInventoryChange(event) {
+  const selectAll = event.target.closest("[data-select-all]");
+  if (selectAll) {
+    const search = normalizeText(els.catalogGallerySearch?.value || "");
+    const visibleProducts = sortCatalogProducts(
+      getFilteredCatalogProducts().filter((product) =>
+        !search
+          ? true
+          : normalizeText(`${product.name} ${product.sku} ${product.tags || ""}`).includes(search),
+      ),
+    );
+
+    visibleProducts.forEach((product) => {
+      if (selectAll.checked) {
+        selectedCatalogSkus.add(product.sku);
+      } else {
+        selectedCatalogSkus.delete(product.sku);
+      }
+    });
+    renderCatalogGallery();
+    return;
+  }
+
+  const selectRow = event.target.closest("[data-select-sku]");
+  if (selectRow) {
+    if (selectRow.checked) {
+      selectedCatalogSkus.add(selectRow.dataset.selectSku);
+    } else {
+      selectedCatalogSkus.delete(selectRow.dataset.selectSku);
+    }
+    renderCatalogGallery();
+    return;
+  }
+
+  const priceInput = event.target.closest("[data-price-sku]");
+  if (!priceInput) {
+    return;
+  }
+
+  const product = findProduct(priceInput.dataset.priceSku);
+  if (!product) {
+    return;
+  }
+
+  const parsedPrice = Number(priceInput.value || 0);
+  product.price = Number.isFinite(parsedPrice) ? Math.max(0, parsedPrice) : product.price;
+  persistState({ immediateRemote: true });
+  showToast(`Precio actualizado para ${product.name}.`);
+}
+
+async function duplicateProductBySku(sku) {
+  const baseProduct = findProduct(sku);
+  if (!baseProduct) {
+    return;
+  }
+
+  await prepareRemoteMutation();
+  let nextSku = `${sanitizeSku(baseProduct.sku)}-COPY`;
+  let suffix = 2;
+
+  while (findProduct(nextSku)) {
+    nextSku = `${sanitizeSku(baseProduct.sku)}-COPY-${suffix}`;
+    suffix += 1;
+  }
+
+  const clonedProduct = {
+    ...baseProduct,
+    sku: nextSku,
+    name: `${baseProduct.name} copia`,
+    createdAt: todayString(),
+    lastRestockAt: baseProduct.lastRestockAt || todayString(),
+  };
+
+  state.products.unshift(clonedProduct);
+  lastCreatedSku = clonedProduct.sku;
+  selectedCatalogSkus.add(clonedProduct.sku);
+  await persistState({ immediateRemote: true });
+  render();
+  showToast(`Producto duplicado: ${clonedProduct.sku}`);
 }
 
 function renderQuickSale() {
@@ -2154,12 +2393,12 @@ function aggregateSalesBy(getLabel) {
 
 function getFilteredCatalogProducts() {
   const search = normalizeText(els.catalogSearch.value);
-  const themeFilters = getSelectedValues(els.catalogThemeFilter);
+  const themeFilter = els.catalogThemeFilter?.value || "all";
   const materialFilters = getSelectedValues(els.catalogMaterialFilter);
   const stockFilters = getSelectedValues(els.catalogStockFilter);
-  const minUnits = Number(els.catalogMinUnits.value || 0);
-  const dateFrom = els.catalogDateFrom.value;
-  const dateTo = els.catalogDateTo.value;
+  const minUnits = Number(els.catalogMinUnits?.value || 0);
+  const dateFrom = els.catalogDateFrom?.value || "";
+  const dateTo = els.catalogDateTo?.value || "";
 
   return getSortedProducts().filter((product) => {
     const textMatch =
@@ -2168,7 +2407,7 @@ function getFilteredCatalogProducts() {
         `${product.sku} ${product.name} ${product.character} ${product.theme} ${product.tags}`,
       ).includes(search);
 
-    const themeMatch = !themeFilters.length || themeFilters.includes(product.theme);
+      const themeMatch = themeFilter === "all" || product.theme === themeFilter;
     const materialMatch = !materialFilters.length || materialFilters.includes(product.material);
     const unitsMatch = product.stock >= minUnits;
     const stockMatch =
@@ -3041,8 +3280,11 @@ function handleCatalogGalleryClick(event) {
   const themeChip = event.target.closest("[data-theme-chip]");
   if (themeChip) {
     const value = themeChip.dataset.themeChip;
-    toggleMultiSelectValue(els.catalogThemeFilter, value);
-    render();
+    if (els.catalogThemeFilter) {
+      els.catalogThemeFilter.value = els.catalogThemeFilter.value === value ? "all" : value;
+    }
+    renderCatalogGallery();
+    renderThemes();
     return;
   }
 
@@ -3061,6 +3303,13 @@ function handleCatalogGalleryClick(event) {
       deleteProductBySku(sku);
       return;
     }
+  }
+
+  const rowActionButton = event.target.closest("[data-row-action]");
+  if (rowActionButton?.dataset.rowAction === "duplicate") {
+    event.stopPropagation();
+    duplicateProductBySku(rowActionButton.dataset.sku);
+    return;
   }
 
   const card = event.target.closest("[data-open-product]");
@@ -3103,11 +3352,9 @@ function clearThemeSelection(theme) {
     return;
   }
 
-  [...els.catalogThemeFilter.options].forEach((option) => {
-    if (option.value === theme) {
-      option.selected = false;
-    }
-  });
+  if (els.catalogThemeFilter.value === theme) {
+    els.catalogThemeFilter.value = "all";
+  }
 }
 
 function deleteProductBySku(originalSku) {
@@ -3129,6 +3376,7 @@ function deleteProductBySku(originalSku) {
   state.restocks = state.restocks.filter((entry) => sanitizeSku(entry.sku) !== normalizedSku);
   state.sales = state.sales.filter((entry) => sanitizeSku(entry.sku) !== normalizedSku);
   scannerState.cart = scannerState.cart.filter((entry) => sanitizeSku(entry.sku) !== normalizedSku);
+  selectedCatalogSkus.delete(product.sku);
   if (sanitizeSku(lastCreatedSku) === normalizedSku) {
     lastCreatedSku = "";
   }
