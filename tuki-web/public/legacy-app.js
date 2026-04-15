@@ -1391,20 +1391,28 @@ function renderCatalogGallery() {
   els.catalogGalleryGrid.innerHTML = products.length
     ? products
         .map(
-          (product) => `
-            <article class="magazine-card ${sanitizeSku(product.sku) === sanitizeSku(lastCreatedSku) ? "just-added" : ""}" role="button" tabindex="0" data-open-product="${product.sku}">
+          (product) => {
+            const isLowStock = product.stock <= product.minStock;
+            const isOutOfStock = product.stock === 0;
+            return `
+            <article class="magazine-card ${sanitizeSku(product.sku) === sanitizeSku(lastCreatedSku) ? "just-added" : ""} ${isOutOfStock ? "out-of-stock" : ""}" role="button" tabindex="0" data-open-product="${product.sku}">
+              <button type="button" class="card-more-button" aria-label="Abrir opciones de ${product.name}">
+                <span aria-hidden="true">⋯</span>
+              </button>
               ${renderProductImage(product)}
-              <div>
+              <div class="magazine-card-copy">
                 <strong>${product.name}</strong>
                 <div class="hint">${product.sku}</div>
               </div>
               <div class="catalog-meta">
-                <span class="status-tag accent">${product.theme}</span>
-                <span class="status-tag">${product.material}</span>
-                <span class="status-tag ${product.stock <= product.minStock ? "low" : "good"}">${product.stock} u.</span>
+                <span class="status-tag accent high-contrast">${product.theme}</span>
+                <span class="status-tag high-contrast">${product.material}</span>
+                <span class="status-tag stock-badge ${isOutOfStock ? "danger" : isLowStock ? "low" : "good"}">${product.stock} u.</span>
               </div>
+              ${isOutOfStock ? '<div class="catalog-stock-overlay">Sin stock</div>' : ""}
             </article>
-          `,
+          `;
+          },
         )
         .join("")
     : "<p>No hay stickers que coincidan con esa busqueda.</p>";

@@ -129,13 +129,13 @@
           </div>
         </section>
 
-        <section id="catalog" class="view">
-          <header class="section-header">
-            <div>
-              <p class="eyebrow">Base maestra</p>
-              <h2>Catalogo de stickers</h2>
-            </div>
-          </header>
+          <section id="catalog" class="view">
+            <header class="section-header">
+              <div>
+                <p class="eyebrow eyebrow-subtle">Base maestra</p>
+                <h2>Catalogo de stickers</h2>
+              </div>
+            </header>
 
           <div class="section-tabs">
             <a class="section-tab active" href="#catalog-gallery" data-tab-group="catalog" data-tab="catalog-gallery">Catalogo visual</a>
@@ -144,21 +144,24 @@
             <a class="section-tab" href="#catalog-new" data-tab-group="catalog" data-tab="catalog-new">Cargar nuevo modelo</a>
           </div>
 
-          <section id="catalog-gallery" class="tab-panel active" data-tab-group="catalog">
-            <section class="panel">
-              <div class="panel-header">
-                <h3>Catalogo visual</h3>
-                <span id="catalog-gallery-count" class="hint">0 modelos</span>
-              </div>
-              <div class="gallery-toolbar">
-                <label class="wide">
-                  Buscar por nombre
-                  <input id="catalog-gallery-search" placeholder="Ej. Goku, Messi, Hello Kitty" />
-                </label>
-              </div>
-              <div id="catalog-gallery-grid" class="magazine-grid empty-state-inline"></div>
+            <section id="catalog-gallery" class="tab-panel active" data-tab-group="catalog">
+              <section class="panel">
+                <div class="panel-header">
+                  <h3>Catalogo visual</h3>
+                  <span id="catalog-gallery-count" class="hint">0 modelos</span>
+                </div>
+                <div class="gallery-toolbar gallery-toolbar-compact">
+                  <label class="wide search-field">
+                    <span class="search-label">Buscar por nombre</span>
+                    <span class="search-input-wrap">
+                      <span class="search-icon" aria-hidden="true">⌕</span>
+                      <input id="catalog-gallery-search" placeholder="Buscar por nombre o SKU" />
+                    </span>
+                  </label>
+                </div>
+                <div id="catalog-gallery-grid" class="magazine-grid empty-state-inline"></div>
+              </section>
             </section>
-          </section>
 
           <section id="catalog-themes" class="tab-panel" data-tab-group="catalog">
             <section class="panel">
