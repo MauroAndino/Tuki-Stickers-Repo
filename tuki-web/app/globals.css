@@ -1003,10 +1003,28 @@ select:focus {
 }
 
 .inventory-thumb img,
-.inventory-thumb .product-image-placeholder {
+.inventory-thumb .product-image-placeholder,
+.inventory-thumb .catalog-image,
+.inventory-thumb .catalog-image-placeholder {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.inventory-thumb .catalog-image {
+  display: block;
+}
+
+.inventory-thumb .catalog-image-placeholder,
+.inventory-thumb .product-image-placeholder {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, #f7f8fa, #eff2f5);
+  color: #7b8391;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.35rem;
 }
 
 .inventory-thumb.is-out {
