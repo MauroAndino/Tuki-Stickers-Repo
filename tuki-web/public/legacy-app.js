@@ -182,6 +182,7 @@ let currentQrCanvasDataUrl = "";
 let currentQrValue = "";
 let toastTimer = null;
 let lastCreatedSku = "";
+let productPreviewImageDataUrl = "";
 
 const els = {
   navLinks: [...document.querySelectorAll(".nav-link")],
@@ -200,6 +201,10 @@ const els = {
   catalogGalleryGrid: document.getElementById("catalog-gallery-grid"),
   catalogGallerySearch: document.getElementById("catalog-gallery-search"),
   catalogGalleryCount: document.getElementById("catalog-gallery-count"),
+  catalogToolbarToggles: [...document.querySelectorAll("[data-toolbar-panel]")],
+  catalogUtilityPanels: [...document.querySelectorAll(".catalog-utility-panel")],
+  catalogFilterPanel: document.getElementById("catalog-filter-panel"),
+  catalogThemePanel: document.getElementById("catalog-theme-panel"),
   themeList: document.getElementById("theme-list"),
   salesList: document.getElementById("sales-list"),
   restockList: document.getElementById("restock-list"),
@@ -252,7 +257,16 @@ const els = {
   confirmScannerSale: document.getElementById("confirm-scanner-sale"),
   manualEntryDisclosure: document.getElementById("manual-entry-disclosure"),
   productTheme: document.getElementById("product-theme"),
+  productImageInput: document.getElementById("product-image-input"),
+  productImageDropzone: document.getElementById("product-image-dropzone"),
   productQrPreview: document.getElementById("product-qr-preview"),
+  productLivePreview: document.getElementById("product-live-preview"),
+  productLivePreviewImage: document.getElementById("product-live-preview-image"),
+  previewName: document.getElementById("preview-name"),
+  previewSku: document.getElementById("preview-sku"),
+  previewTheme: document.getElementById("preview-theme"),
+  previewMaterial: document.getElementById("preview-material"),
+  previewStock: document.getElementById("preview-stock"),
   generateQrButton: document.getElementById("generate-qr-button"),
   verifyQrButton: document.getElementById("verify-qr-button"),
   downloadQrButton: document.getElementById("download-qr-button"),
@@ -364,6 +378,9 @@ function bindEvents() {
   onElement(els.mobileNavClose, "click", closeMobileNav);
   onElement(els.mobileNavBackdrop, "click", closeMobileNav);
   onElement(els.catalogGalleryGrid, "click", handleCatalogGalleryClick);
+  els.catalogToolbarToggles.forEach((button) => {
+    bindPress(button, () => toggleCatalogUtilityPanel(button.dataset.toolbarPanel));
+  });
   onElement(els.closeProductDetail, "click", closeProductDetailModal);
   onElement(els.productDetailModal, "click", handleProductDetailBackdrop);
   onElement(els.productDetailForm, "submit", handleProductDetailSubmit);
@@ -376,14 +393,23 @@ function bindEvents() {
   onElement(els.seedButton, "click", seedDemoData);
   onElement(els.resetButton, "click", resetAllData);
   onElement(els.exportButton, "click", exportBackup);
-    onElement(els.importButton, "click", () => els.importFile?.click());
-      onElement(els.importFile, "change", importBackup);
-      onElement(els.undoLastScan, "click", undoLastScannerItem);
-      window.addEventListener("resize", syncManualEntryDisclosure);
-      window.addEventListener("resize", syncMobileNavState);
+  onElement(els.importButton, "click", () => els.importFile?.click());
+  onElement(els.importFile, "change", importBackup);
+  onElement(els.undoLastScan, "click", undoLastScannerItem);
+  onElement(els.productImageInput, "change", handleProductImagePreviewChange);
+  onElement(els.productImageDropzone, "dragover", handleProductImageDragOver);
+  onElement(els.productImageDropzone, "dragleave", handleProductImageDragLeave);
+  onElement(els.productImageDropzone, "drop", handleProductImageDrop);
+  window.addEventListener("resize", syncManualEntryDisclosure);
+  window.addEventListener("resize", syncMobileNavState);
 
   if (els.quickSaleGrid) {
     els.quickSaleGrid.addEventListener("click", handleQuickSaleClick);
+  }
+
+  if (els.productForm) {
+    els.productForm.addEventListener("input", updateProductLivePreview);
+    els.productForm.addEventListener("change", updateProductLivePreview);
   }
 
   [
@@ -413,9 +439,9 @@ function bindEvents() {
 
   els.clearCatalogFilters.addEventListener("click", () => {
     els.catalogSearch.value = "";
-    els.catalogThemeFilter.value = "all";
-    els.catalogMaterialFilter.value = "all";
-    els.catalogStockFilter.value = "all";
+    clearMultiSelect(els.catalogThemeFilter);
+    clearMultiSelect(els.catalogMaterialFilter);
+    clearMultiSelect(els.catalogStockFilter);
     els.catalogDateFrom.value = "";
     els.catalogDateTo.value = "";
     els.catalogMinUnits.value = "";
@@ -512,9 +538,16 @@ function syncNavigationFromHash() {
     return;
   }
 
-  if (["catalog-gallery", "catalog-themes", "catalog-filters", "catalog-new"].includes(target)) {
+  if (["catalog-gallery", "catalog-new"].includes(target)) {
     activateView("catalog");
     activateSectionTab("catalog", target);
+    return;
+  }
+
+  if (["catalog-themes", "catalog-filters"].includes(target)) {
+    activateView("catalog");
+    activateSectionTab("catalog", "catalog-gallery");
+    toggleCatalogUtilityPanel(target === "catalog-themes" ? "catalog-theme-panel" : "catalog-filter-panel");
     return;
   }
 
@@ -612,6 +645,38 @@ function activateSectionTab(group, tabId) {
   }
 }
 
+function toggleCatalogUtilityPanel(panelId) {
+  if (!panelId) {
+    return;
+  }
+
+  els.catalogUtilityPanels.forEach((panel) => {
+    panel.classList.toggle("open", panel.id === panelId ? !panel.classList.contains("open") : false);
+  });
+
+  els.catalogToolbarToggles.forEach((button) => {
+    button.classList.toggle("active", button.dataset.toolbarPanel === panelId && document.getElementById(panelId)?.classList.contains("open"));
+  });
+}
+
+function clearMultiSelect(select) {
+  if (!select) {
+    return;
+  }
+
+  [...select.options].forEach((option) => {
+    option.selected = false;
+  });
+}
+
+function getSelectedValues(select) {
+  if (!select) {
+    return [];
+  }
+
+  return [...select.selectedOptions].map((option) => option.value);
+}
+
 async function handleProductSubmit(event) {
   event.preventDefault();
   const formElement = event.currentTarget;
@@ -678,6 +743,8 @@ async function handleProductSubmit(event) {
   showToast(`Modelo ingresado: ${product.name}`);
   formElement.reset();
   setTodayDefaults();
+  productPreviewImageDataUrl = "";
+  updateProductLivePreview();
 }
 
 async function handleThemeSubmit(event) {
@@ -703,6 +770,82 @@ async function handleThemeSubmit(event) {
   formElement.reset();
   render();
   showToast(`Tematica agregada: ${themeName}`);
+}
+
+async function handleProductImagePreviewChange(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    productPreviewImageDataUrl = "";
+    updateProductLivePreview();
+    return;
+  }
+
+  productPreviewImageDataUrl = await readFileAsDataUrl(file);
+  updateProductLivePreview();
+}
+
+function handleProductImageDragOver(event) {
+  event.preventDefault();
+  els.productImageDropzone?.classList.add("is-dragover");
+}
+
+function handleProductImageDragLeave(event) {
+  event.preventDefault();
+  els.productImageDropzone?.classList.remove("is-dragover");
+}
+
+async function handleProductImageDrop(event) {
+  event.preventDefault();
+  els.productImageDropzone?.classList.remove("is-dragover");
+  const file = event.dataTransfer?.files?.[0];
+  if (!file || !file.type.startsWith("image/") || !els.productImageInput) {
+    return;
+  }
+
+  if (typeof DataTransfer === "function") {
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    els.productImageInput.files = transfer.files;
+  }
+
+  productPreviewImageDataUrl = await readFileAsDataUrl(file);
+  updateProductLivePreview();
+}
+
+function updateProductLivePreview() {
+  if (!els.productForm) {
+    return;
+  }
+
+  const name = String(els.productForm.elements.name?.value || "").trim() || "Nuevo sticker";
+  const sku = sanitizeSku(els.productForm.elements.sku?.value || "") || "SKU-000";
+  const theme = String(els.productForm.elements.theme?.value || "").trim() || "Tematica";
+  const material = String(els.productForm.elements.material?.value || "").trim() || "Vinilo";
+  const stock = Number(els.productForm.elements.stock?.value || 0);
+  const stockClass = stock === 0 ? "danger" : stock <= 5 ? "low" : "good";
+
+  setElementText(els.previewName, name);
+  setElementText(els.previewSku, sku);
+  setElementText(els.previewTheme, theme);
+  setElementText(els.previewMaterial, material);
+  setElementText(els.previewStock, `${stock} u.`);
+
+  if (els.previewStock) {
+    els.previewStock.className = `status-tag stock-badge ${stockClass}`;
+  }
+  if (els.productLivePreview) {
+    els.productLivePreview.classList.toggle("out-of-stock", stock === 0);
+  }
+
+  if (!els.productLivePreviewImage) {
+    return;
+  }
+
+  if (productPreviewImageDataUrl) {
+    els.productLivePreviewImage.innerHTML = `<img class="catalog-image" src="${productPreviewImageDataUrl}" alt="${name}" />`;
+  } else {
+    els.productLivePreviewImage.innerHTML = "Sin imagen";
+  }
 }
 
 async function handleSaleSubmit(event) {
@@ -1307,6 +1450,7 @@ function renderSelects() {
   ).join("");
   populateCatalogFilters();
   updateSalePricePreview();
+  updateProductLivePreview();
 }
 
 function renderThemes() {
@@ -1323,19 +1467,26 @@ function renderThemes() {
 function populateCatalogFilters() {
   const themes = [...new Set(state.products.map((product) => product.theme))].sort();
   const materials = [...new Set(state.products.map((product) => product.material))].sort();
+  const selectedThemes = getSelectedValues(els.catalogThemeFilter);
+  const selectedMaterials = getSelectedValues(els.catalogMaterialFilter);
+  const selectedStockStates = getSelectedValues(els.catalogStockFilter);
 
-  const themeValue = els.catalogThemeFilter.value || "all";
-  const materialValue = els.catalogMaterialFilter.value || "all";
+  els.catalogThemeFilter.innerHTML = themes
+    .map((theme) => `<option value="${theme}">${theme}</option>`)
+    .join("");
+  els.catalogMaterialFilter.innerHTML = materials
+    .map((material) => `<option value="${material}">${material}</option>`)
+    .join("");
 
-  els.catalogThemeFilter.innerHTML =
-    `<option value="all">Todas</option>` +
-    themes.map((theme) => `<option value="${theme}">${theme}</option>`).join("");
-  els.catalogMaterialFilter.innerHTML =
-    `<option value="all">Todos</option>` +
-    materials.map((material) => `<option value="${material}">${material}</option>`).join("");
-
-  els.catalogThemeFilter.value = themes.includes(themeValue) ? themeValue : "all";
-  els.catalogMaterialFilter.value = materials.includes(materialValue) ? materialValue : "all";
+  [...els.catalogThemeFilter.options].forEach((option) => {
+    option.selected = selectedThemes.includes(option.value);
+  });
+  [...els.catalogMaterialFilter.options].forEach((option) => {
+    option.selected = selectedMaterials.includes(option.value);
+  });
+  [...els.catalogStockFilter.options].forEach((option) => {
+    option.selected = selectedStockStates.includes(option.value);
+  });
 }
 
 function renderCatalog() {
@@ -1379,7 +1530,7 @@ function renderCatalog() {
 
 function renderCatalogGallery() {
   const search = normalizeText(els.catalogGallerySearch.value);
-  const products = getSortedProducts().filter((product) => {
+  const products = getFilteredCatalogProducts().filter((product) => {
     if (!search) {
       return true;
     }
@@ -1392,13 +1543,18 @@ function renderCatalogGallery() {
     ? products
         .map(
           (product) => {
-            const isLowStock = product.stock <= product.minStock;
+            const isLowStock = product.stock > 0 && product.stock <= 5;
             const isOutOfStock = product.stock === 0;
+            const stockClass = isOutOfStock ? "danger" : isLowStock ? "low" : "good";
             return `
             <article class="magazine-card ${sanitizeSku(product.sku) === sanitizeSku(lastCreatedSku) ? "just-added" : ""} ${isOutOfStock ? "out-of-stock" : ""}" role="button" tabindex="0" data-open-product="${product.sku}">
-              <button type="button" class="card-more-button" aria-label="Abrir opciones de ${product.name}">
+              <button type="button" class="card-more-button" aria-label="Mas opciones de ${product.name}">
                 <span aria-hidden="true">⋯</span>
               </button>
+              <div class="catalog-card-actions" aria-hidden="true">
+                <button type="button" class="ghost-button card-action-button" data-card-action="edit" data-sku="${product.sku}">Editar</button>
+                <button type="button" class="ghost-button card-action-button danger-action" data-card-action="delete" data-sku="${product.sku}">Eliminar</button>
+              </div>
               ${renderProductImage(product)}
               <div class="magazine-card-copy">
                 <strong>${product.name}</strong>
@@ -1407,7 +1563,7 @@ function renderCatalogGallery() {
               <div class="catalog-meta">
                 <span class="status-tag accent high-contrast">${product.theme}</span>
                 <span class="status-tag high-contrast">${product.material}</span>
-                <span class="status-tag stock-badge ${isOutOfStock ? "danger" : isLowStock ? "low" : "good"}">${product.stock} u.</span>
+                <span class="status-tag stock-badge ${stockClass}">${product.stock} u.</span>
               </div>
               ${isOutOfStock ? '<div class="catalog-stock-overlay">Sin stock</div>' : ""}
             </article>
@@ -1958,9 +2114,9 @@ function aggregateSalesBy(getLabel) {
 
 function getFilteredCatalogProducts() {
   const search = normalizeText(els.catalogSearch.value);
-  const themeFilter = els.catalogThemeFilter.value || "all";
-  const materialFilter = els.catalogMaterialFilter.value || "all";
-  const stockFilter = els.catalogStockFilter.value || "all";
+  const themeFilters = getSelectedValues(els.catalogThemeFilter);
+  const materialFilters = getSelectedValues(els.catalogMaterialFilter);
+  const stockFilters = getSelectedValues(els.catalogStockFilter);
   const minUnits = Number(els.catalogMinUnits.value || 0);
   const dateFrom = els.catalogDateFrom.value;
   const dateTo = els.catalogDateTo.value;
@@ -1972,14 +2128,23 @@ function getFilteredCatalogProducts() {
         `${product.sku} ${product.name} ${product.character} ${product.theme} ${product.tags}`,
       ).includes(search);
 
-    const themeMatch = themeFilter === "all" || product.theme === themeFilter;
-    const materialMatch = materialFilter === "all" || product.material === materialFilter;
+    const themeMatch = !themeFilters.length || themeFilters.includes(product.theme);
+    const materialMatch = !materialFilters.length || materialFilters.includes(product.material);
     const unitsMatch = product.stock >= minUnits;
     const stockMatch =
-      stockFilter === "all" ||
-      (stockFilter === "low" && product.stock <= product.minStock) ||
-      (stockFilter === "available" && product.stock > 0) ||
-      (stockFilter === "out" && product.stock === 0);
+      !stockFilters.length ||
+      stockFilters.some((filter) => {
+        if (filter === "high") {
+          return product.stock > 5;
+        }
+        if (filter === "low") {
+          return product.stock > 0 && product.stock <= 5;
+        }
+        if (filter === "out") {
+          return product.stock === 0;
+        }
+        return false;
+      });
 
     const lastRestock = product.lastRestockAt || product.createdAt;
     const dateFromMatch = !dateFrom || lastRestock >= dateFrom;
@@ -2825,12 +2990,59 @@ function pulseScannerFeedback() {
 }
 
 function handleCatalogGalleryClick(event) {
+  const actionButton = event.target.closest("[data-card-action]");
+  if (actionButton) {
+    const sku = actionButton.dataset.sku;
+    const action = actionButton.dataset.cardAction;
+    event.stopPropagation();
+
+    if (action === "edit") {
+      openProductDetail(sku);
+      return;
+    }
+
+    if (action === "delete") {
+      deleteProductBySku(sku);
+      return;
+    }
+  }
+
   const card = event.target.closest("[data-open-product]");
   if (!card) {
     return;
   }
 
   openProductDetail(card.dataset.openProduct);
+}
+
+function deleteProductBySku(originalSku) {
+  const normalizedSku = sanitizeSku(originalSku);
+  const product = findProduct(normalizedSku);
+  if (!product) {
+    window.alert("No pude encontrar ese modelo.");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Vas a eliminar el modelo ${product.name} (${product.sku}). Esta accion no se puede deshacer.`,
+  );
+  if (!confirmed) {
+    return;
+  }
+
+  state.products = state.products.filter((item) => sanitizeSku(item.sku) !== normalizedSku);
+  state.restocks = state.restocks.filter((entry) => sanitizeSku(entry.sku) !== normalizedSku);
+  state.sales = state.sales.filter((entry) => sanitizeSku(entry.sku) !== normalizedSku);
+  scannerState.cart = scannerState.cart.filter((entry) => sanitizeSku(entry.sku) !== normalizedSku);
+  if (sanitizeSku(lastCreatedSku) === normalizedSku) {
+    lastCreatedSku = "";
+  }
+
+  persistState();
+  deleteRemoteProductImage(normalizedSku).catch(console.error);
+  closeProductDetailModal();
+  render();
+  showToast(`Modelo eliminado: ${product.name}`);
 }
 
 function handleProductDetailBackdrop(event) {
@@ -2880,32 +3092,7 @@ function handleProductDetailGenerateQr() {
 
 function handleProductDelete() {
   const originalSku = sanitizeSku(els.productDetailForm.elements.skuOriginal?.value);
-  const product = findProduct(originalSku);
-  if (!product) {
-    window.alert("No pude encontrar ese modelo.");
-    return;
-  }
-
-  const confirmed = window.confirm(
-    `Vas a eliminar el modelo ${product.name} (${product.sku}). Esta accion no se puede deshacer.`,
-  );
-  if (!confirmed) {
-    return;
-  }
-
-  state.products = state.products.filter((item) => sanitizeSku(item.sku) !== originalSku);
-  state.restocks = state.restocks.filter((entry) => sanitizeSku(entry.sku) !== originalSku);
-  state.sales = state.sales.filter((entry) => sanitizeSku(entry.sku) !== originalSku);
-  scannerState.cart = scannerState.cart.filter((entry) => sanitizeSku(entry.sku) !== originalSku);
-  if (sanitizeSku(lastCreatedSku) === originalSku) {
-    lastCreatedSku = "";
-  }
-
-  persistState();
-  deleteRemoteProductImage(originalSku).catch(console.error);
-  closeProductDetailModal();
-  render();
-  showToast(`Modelo eliminado: ${product.name}`);
+  deleteProductBySku(originalSku);
 }
 
 async function handleProductDetailSubmit(event) {
