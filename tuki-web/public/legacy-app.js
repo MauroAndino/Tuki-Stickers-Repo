@@ -205,6 +205,7 @@ const els = {
   catalogUtilityPanels: [...document.querySelectorAll(".catalog-utility-panel")],
   catalogFilterPanel: document.getElementById("catalog-filter-panel"),
   catalogThemePanel: document.getElementById("catalog-theme-panel"),
+  openCatalogNew: document.getElementById("open-catalog-new"),
   toggleThemeEditor: document.getElementById("toggle-theme-editor"),
   themeEditorPanel: document.getElementById("theme-editor-panel"),
   themeList: document.getElementById("theme-list"),
@@ -383,6 +384,7 @@ function bindEvents() {
   els.catalogToolbarToggles.forEach((button) => {
     bindPress(button, () => toggleCatalogUtilityPanel(button.dataset.toolbarPanel));
   });
+  onElement(els.openCatalogNew, "click", () => activateSectionTab("catalog", "catalog-new"));
   onElement(els.toggleThemeEditor, "click", toggleThemeEditorPanel);
   onElement(els.closeProductDetail, "click", closeProductDetailModal);
   onElement(els.productDetailModal, "click", handleProductDetailBackdrop);
@@ -654,6 +656,10 @@ function toggleCatalogUtilityPanel(panelId) {
   }
 
   els.catalogUtilityPanels.forEach((panel) => {
+    if (panel.id === "catalog-filter-panel") {
+      panel.classList.remove("open");
+      return;
+    }
     panel.classList.toggle("open", panel.id === panelId ? !panel.classList.contains("open") : false);
   });
 
@@ -1487,7 +1493,10 @@ function renderThemes() {
     ? state.themes
         .map(
           (theme) =>
-            `<button type="button" class="theme-chip ${selectedThemes.includes(theme) ? "active" : ""}" data-theme-chip="${theme}">${theme}</button>`,
+            `<div class="theme-chip ${selectedThemes.includes(theme) ? "active" : ""}" data-theme-chip="${theme}">
+              <button type="button" class="theme-chip-label" data-theme-chip="${theme}">${theme}</button>
+              <button type="button" class="theme-chip-remove" data-theme-remove="${theme}" aria-label="Eliminar ${theme}">×</button>
+            </div>`,
         )
         .join("")
     : "<p>No hay tematicas cargadas todavia.</p>";
@@ -1580,11 +1589,15 @@ function renderCatalogGallery() {
               <button type="button" class="card-more-button" aria-label="Mas opciones de ${product.name}">
                 <span aria-hidden="true">⋯</span>
               </button>
+              <div class="magazine-card-media">
+                ${renderProductImage(product)}
+                <span class="status-tag stock-badge image-stock-badge ${stockClass}">${product.stock} u.</span>
+                ${isOutOfStock ? '<div class="catalog-stock-overlay">Sin stock</div>' : ""}
+              </div>
               <div class="catalog-card-actions" aria-hidden="true">
                 <button type="button" class="ghost-button card-action-button" data-card-action="edit" data-sku="${product.sku}">Editar</button>
                 <button type="button" class="ghost-button card-action-button danger-action" data-card-action="delete" data-sku="${product.sku}">Eliminar</button>
               </div>
-              ${renderProductImage(product)}
               <div class="magazine-card-copy">
                 <strong>${product.name}</strong>
                 <div class="hint">${product.sku}</div>
@@ -1592,9 +1605,7 @@ function renderCatalogGallery() {
               <div class="catalog-meta">
                 <span class="status-tag accent high-contrast">${product.theme}</span>
                 <span class="status-tag high-contrast">${product.material}</span>
-                <span class="status-tag stock-badge ${stockClass}">${product.stock} u.</span>
               </div>
-              ${isOutOfStock ? '<div class="catalog-stock-overlay">Sin stock</div>' : ""}
             </article>
           `;
           },
@@ -3019,6 +3030,14 @@ function pulseScannerFeedback() {
 }
 
 function handleCatalogGalleryClick(event) {
+  const removeThemeButton = event.target.closest("[data-theme-remove]");
+  if (removeThemeButton) {
+    const theme = removeThemeButton.dataset.themeRemove;
+    event.stopPropagation();
+    deleteTheme(theme);
+    return;
+  }
+
   const themeChip = event.target.closest("[data-theme-chip]");
   if (themeChip) {
     const value = themeChip.dataset.themeChip;
@@ -3050,6 +3069,45 @@ function handleCatalogGalleryClick(event) {
   }
 
   openProductDetail(card.dataset.openProduct);
+}
+
+async function deleteTheme(theme) {
+  if (!theme) {
+    return;
+  }
+
+  const affectedProducts = state.products.filter((product) => product.theme === theme);
+  const confirmed = window.confirm(
+    `¿Estas seguro? Esto afectara a ${affectedProducts.length} sticker${affectedProducts.length === 1 ? "" : "s"} asociados.`,
+  );
+  if (!confirmed) {
+    return;
+  }
+
+  await prepareRemoteMutation();
+  state.themes = state.themes.filter((item) => item !== theme);
+  state.products.forEach((product) => {
+    if (product.theme === theme) {
+      product.theme = "Sin tema";
+    }
+  });
+
+  clearThemeSelection(theme);
+  await persistState({ immediateRemote: true });
+  render();
+  showToast(`Tematica eliminada: ${theme}`);
+}
+
+function clearThemeSelection(theme) {
+  if (!els.catalogThemeFilter) {
+    return;
+  }
+
+  [...els.catalogThemeFilter.options].forEach((option) => {
+    if (option.value === theme) {
+      option.selected = false;
+    }
+  });
 }
 
 function deleteProductBySku(originalSku) {

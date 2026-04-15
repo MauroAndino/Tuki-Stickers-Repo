@@ -137,32 +137,23 @@
               </div>
             </header>
 
-          <div class="section-tabs">
-            <a class="section-tab active" href="#catalog-gallery" data-tab-group="catalog" data-tab="catalog-gallery">Catalogo visual</a>
-            <a class="section-tab" href="#catalog-new" data-tab-group="catalog" data-tab="catalog-new">Cargar nuevo modelo</a>
-          </div>
-
             <section id="catalog-gallery" class="tab-panel active" data-tab-group="catalog">
               <section class="panel">
-                <div class="panel-header">
-                  <h3>Catalogo visual</h3>
-                  <span id="catalog-gallery-count" class="hint">0 modelos</span>
-                </div>
                 <div class="gallery-toolbar gallery-toolbar-compact">
-                  <label class="wide search-field">
-                    <span class="search-label">Buscar por nombre</span>
+                  <label class="search-field catalog-search-inline">
                     <span class="search-input-wrap">
                       <span class="search-icon" aria-hidden="true">⌕</span>
                       <input id="catalog-gallery-search" placeholder="Buscar por nombre o SKU" />
                     </span>
                   </label>
                   <div class="catalog-toolbar-actions">
-                    <button type="button" class="ghost-button toolbar-toggle active" data-toolbar-panel="catalog-filter-panel">Filtros</button>
-                    <button type="button" class="ghost-button toolbar-toggle" data-toolbar-panel="catalog-theme-panel">Tematicas</button>
+                    <button type="button" class="ghost-button toolbar-toggle" data-toolbar-panel="catalog-theme-panel"># Filtrar por tematica</button>
+                    <button type="button" id="open-catalog-new" class="primary-button compact-primary-button">Cargar nuevo</button>
                   </div>
+                  <span id="catalog-gallery-count" class="hint catalog-count-inline">0 modelos</span>
                 </div>
 
-                <div id="catalog-filter-panel" class="catalog-utility-panel open">
+                <div id="catalog-filter-panel" class="catalog-utility-panel utility-hidden" hidden>
                   <div class="catalog-filter-stack">
                     <label class="wide">
                       Buscar en detalle

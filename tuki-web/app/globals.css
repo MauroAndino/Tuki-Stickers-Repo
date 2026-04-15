@@ -661,6 +661,10 @@ select:focus {
   gap: 0.45rem;
 }
 
+.magazine-card-media {
+  position: relative;
+}
+
 .high-contrast {
   color: #303540;
   font-weight: 700;
@@ -668,6 +672,17 @@ select:focus {
 
 .stock-badge {
   font-weight: 800;
+}
+
+.image-stock-badge {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  z-index: 1;
+  min-height: 1.55rem;
+  padding: 0 0.5rem;
+  font-size: 0.64rem;
+  backdrop-filter: blur(10px);
 }
 
 .stock-badge.danger {
@@ -883,10 +898,24 @@ select:focus {
   margin-bottom: 0.05rem;
 }
 
+.catalog-search-inline {
+  min-width: 0;
+}
+
 .catalog-toolbar-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.65rem;
+}
+
+.catalog-count-inline {
+  justify-self: end;
+  align-self: center;
+}
+
+.compact-primary-button {
+  min-height: 2.9rem;
+  padding: 0.7rem 1rem;
 }
 
 .toolbar-toggle.active {
@@ -910,6 +939,10 @@ select:focus {
   margin-bottom: 0.15rem;
   opacity: 1;
   transform: translateY(0);
+}
+
+.utility-hidden {
+  display: none !important;
 }
 
 .catalog-filter-stack {
@@ -982,8 +1015,11 @@ select:focus {
 }
 
 .theme-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   min-height: 2.2rem;
-  padding: 0.5rem 0.85rem;
+  padding: 0.2rem 0.25rem 0.2rem 0.7rem;
   border: 1px solid rgba(29, 29, 31, 0.08);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.92);
@@ -997,6 +1033,36 @@ select:focus {
   background: rgba(10, 132, 255, 0.1);
   color: #0a84ff;
   border-color: rgba(10, 132, 255, 0.18);
+}
+
+.theme-chip-label,
+.theme-chip-remove {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.theme-chip-label {
+  padding: 0;
+  font-weight: 700;
+}
+
+.theme-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: rgba(29, 29, 31, 0.06);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.theme-chip:hover,
+.theme-chip.active {
+  transform: translateY(-1px);
 }
 
 .search-field {
@@ -1542,6 +1608,11 @@ select:focus {
 
   .catalog-toolbar-actions {
     width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .catalog-count-inline {
+    justify-self: start;
   }
 
   .catalog-filter-stack,
@@ -1559,6 +1630,10 @@ select:focus {
     opacity: 1;
     pointer-events: auto;
     transform: none;
+  }
+
+  .theme-panel-header {
+    justify-content: flex-start;
   }
 
   .magazine-card,
