@@ -727,22 +727,16 @@ select:focus {
   position: relative;
   overflow: hidden;
   min-height: 340px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-xl);
-  background:
-    linear-gradient(180deg, rgba(8, 20, 44, 0.12), rgba(8, 20, 44, 0.28)),
-    rgba(255, 255, 255, 0.18);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .scanner-premium-card {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.74)),
     rgba(255, 255, 255, 0.7);
-}
-
-.scanner-premium-card .panel-header {
-  align-items: flex-start;
 }
 
 .scanner-premium-card .badge {
@@ -766,18 +760,34 @@ select:focus {
 }
 
 .pos-scanner-panel .scanner-toolbar .scanner-actions {
-  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  grid-template-columns: repeat(2, 52px);
   gap: 1rem;
+  justify-content: end;
 }
 
 .pos-footer-actions {
   gap: 1rem;
 }
 
+.scanner-icon-button {
+  width: 52px;
+  min-width: 52px;
+  min-height: 52px;
+  padding: 0;
+  border-radius: 999px;
+}
+
+.scanner-icon-button span {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
 #scanner-video {
   width: 100%;
   height: 340px;
   object-fit: cover;
+  border-radius: 30px;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.12);
 }
 
 .scanner-overlay {
@@ -794,6 +804,10 @@ select:focus {
   border: 3px solid rgba(255, 255, 255, 0.92);
   border-radius: 30px;
   box-shadow: 0 0 0 999px rgba(14, 10, 7, 0.16);
+}
+
+.scanner-status-minimal {
+  margin-top: 0.5rem;
 }
 
 .scanner-summary {
@@ -1695,8 +1709,9 @@ select:focus {
   }
 
   .pos-scanner-panel .scanner-toolbar .scanner-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, 52px);
     gap: 0.85rem;
+    justify-content: start;
   }
 
   .scanner-stage {

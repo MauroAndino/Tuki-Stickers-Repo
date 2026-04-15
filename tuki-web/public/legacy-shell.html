@@ -317,14 +317,6 @@
           <section id="sales-scan" class="tab-panel active" data-tab-group="sales">
             <div class="sales-pos-layout">
               <section class="panel pos-scanner-panel bento-card bento-card-white scanner-premium-card watermark-scan-soft">
-                <div class="panel-header">
-                  <div>
-                    <h3>Live scanner active</h3>
-                    <span class="hint">Escanea y arma la venta en tiempo real</span>
-                  </div>
-                  <span class="badge subtle-badge">POS</span>
-                </div>
-
                 <div class="scanner-toolbar">
                   <label>
                     Canal
@@ -335,8 +327,12 @@
                     </select>
                   </label>
                   <div class="scanner-actions">
-                    <button id="start-scanner" type="button" class="primary-button">Iniciar camara</button>
-                    <button id="stop-scanner" type="button" class="ghost-button">Detener</button>
+                    <button id="start-scanner" type="button" class="primary-button scanner-icon-button" aria-label="Iniciar camara" title="Iniciar camara">
+                      <span aria-hidden="true">◉</span>
+                    </button>
+                    <button id="stop-scanner" type="button" class="ghost-button scanner-icon-button" aria-label="Detener camara" title="Detener camara">
+                      <span aria-hidden="true">■</span>
+                    </button>
                   </div>
                 </div>
 
@@ -347,10 +343,7 @@
                   </div>
                 </div>
 
-                <div id="scanner-status" class="inline-note">
-                  <strong>Camara inactiva</strong>
-                  <span class="hint">Inicia la camara y apunta al codigo del sticker</span>
-                </div>
+                <div id="scanner-status" class="inline-note scanner-status-minimal" hidden></div>
 
                 <div id="scanner-last-read" class="list-card empty-state-inline"></div>
                 <div class="scanner-quick-actions">

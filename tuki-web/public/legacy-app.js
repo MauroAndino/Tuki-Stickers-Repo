@@ -2146,6 +2146,18 @@ async function verifyCurrentQr() {
 }
 
 function setScannerStatus(title, detail) {
+  if (!els.scannerStatus) {
+    return;
+  }
+
+  const shouldHide = title === "Camara inactiva" || title === "Camara activa";
+  if (shouldHide) {
+    els.scannerStatus.hidden = true;
+    els.scannerStatus.innerHTML = "";
+    return;
+  }
+
+  els.scannerStatus.hidden = false;
   els.scannerStatus.innerHTML = `<strong>${title}</strong><span class="hint">${detail}</span>`;
 }
 
