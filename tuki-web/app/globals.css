@@ -272,6 +272,10 @@ img {
   min-width: 0;
 }
 
+#catalog.view {
+  gap: 0.85rem;
+}
+
 .view {
   display: none;
   gap: 1rem;
@@ -802,17 +806,18 @@ select:focus {
 
 .catalog-stock-overlay {
   position: absolute;
-  inset: 0.85rem 0.85rem auto auto;
+  top: 1.05rem;
+  left: 1.05rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 1.95rem;
-  padding: 0 0.75rem;
+  min-height: 1.7rem;
+  padding: 0 0.6rem;
   border-radius: 999px;
   background: rgba(255, 244, 244, 0.96);
   color: #c7382b;
   border: 1px solid rgba(255, 69, 58, 0.16);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 800;
 }
 
@@ -871,7 +876,11 @@ select:focus {
 }
 
 .gallery-toolbar-compact {
-  margin-bottom: 0.15rem;
+  display: grid;
+  grid-template-columns: minmax(320px, 1.4fr) auto auto;
+  align-items: end;
+  gap: 0.65rem;
+  margin-bottom: 0.05rem;
 }
 
 .catalog-toolbar-actions {
@@ -898,7 +907,7 @@ select:focus {
 
 .catalog-utility-panel.open {
   max-height: 48rem;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.15rem;
   opacity: 1;
   transform: translateY(0);
 }
@@ -934,6 +943,60 @@ select:focus {
 
 .compact-form {
   margin-top: 0.2rem;
+}
+
+.theme-panel-header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.compact-toggle-button {
+  min-height: 2.35rem;
+  padding: 0.55rem 0.9rem;
+}
+
+.theme-editor-panel {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: max-height 180ms ease, opacity 160ms ease, transform 160ms ease, margin 160ms ease;
+}
+
+.theme-editor-panel.open {
+  max-height: 14rem;
+  margin-bottom: 0.35rem;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#theme-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  min-height: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.theme-chip {
+  min-height: 2.2rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid rgba(29, 29, 31, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #4b5563;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.theme-chip.active {
+  background: rgba(10, 132, 255, 0.1);
+  color: #0a84ff;
+  border-color: rgba(10, 132, 255, 0.18);
 }
 
 .search-field {
@@ -1471,6 +1534,10 @@ select:focus {
   .magazine-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.8rem;
+  }
+
+  .gallery-toolbar-compact {
+    grid-template-columns: 1fr;
   }
 
   .catalog-toolbar-actions {

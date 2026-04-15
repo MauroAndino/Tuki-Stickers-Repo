@@ -205,6 +205,8 @@ const els = {
   catalogUtilityPanels: [...document.querySelectorAll(".catalog-utility-panel")],
   catalogFilterPanel: document.getElementById("catalog-filter-panel"),
   catalogThemePanel: document.getElementById("catalog-theme-panel"),
+  toggleThemeEditor: document.getElementById("toggle-theme-editor"),
+  themeEditorPanel: document.getElementById("theme-editor-panel"),
   themeList: document.getElementById("theme-list"),
   salesList: document.getElementById("sales-list"),
   restockList: document.getElementById("restock-list"),
@@ -381,6 +383,7 @@ function bindEvents() {
   els.catalogToolbarToggles.forEach((button) => {
     bindPress(button, () => toggleCatalogUtilityPanel(button.dataset.toolbarPanel));
   });
+  onElement(els.toggleThemeEditor, "click", toggleThemeEditorPanel);
   onElement(els.closeProductDetail, "click", closeProductDetailModal);
   onElement(els.productDetailModal, "click", handleProductDetailBackdrop);
   onElement(els.productDetailForm, "submit", handleProductDetailSubmit);
@@ -659,6 +662,18 @@ function toggleCatalogUtilityPanel(panelId) {
   });
 }
 
+function toggleThemeEditorPanel() {
+  if (!els.themeEditorPanel) {
+    return;
+  }
+
+  const nextState = !els.themeEditorPanel.classList.contains("open");
+  els.themeEditorPanel.classList.toggle("open", nextState);
+  if (els.toggleThemeEditor) {
+    els.toggleThemeEditor.classList.toggle("active", nextState);
+  }
+}
+
 function clearMultiSelect(select) {
   if (!select) {
     return;
@@ -675,6 +690,19 @@ function getSelectedValues(select) {
   }
 
   return [...select.selectedOptions].map((option) => option.value);
+}
+
+function toggleMultiSelectValue(select, value) {
+  if (!select || !value) {
+    return;
+  }
+
+  const option = [...select.options].find((item) => item.value === value);
+  if (!option) {
+    return;
+  }
+
+  option.selected = !option.selected;
 }
 
 async function handleProductSubmit(event) {
@@ -1454,11 +1482,12 @@ function renderSelects() {
 }
 
 function renderThemes() {
+  const selectedThemes = getSelectedValues(els.catalogThemeFilter);
   els.themeList.innerHTML = state.themes.length
     ? state.themes
         .map(
           (theme) =>
-            `<article class="list-item"><strong>${theme}</strong><div class="hint">Disponible para nuevos modelos</div></article>`,
+            `<button type="button" class="theme-chip ${selectedThemes.includes(theme) ? "active" : ""}" data-theme-chip="${theme}">${theme}</button>`,
         )
         .join("")
     : "<p>No hay tematicas cargadas todavia.</p>";
@@ -2990,6 +3019,14 @@ function pulseScannerFeedback() {
 }
 
 function handleCatalogGalleryClick(event) {
+  const themeChip = event.target.closest("[data-theme-chip]");
+  if (themeChip) {
+    const value = themeChip.dataset.themeChip;
+    toggleMultiSelectValue(els.catalogThemeFilter, value);
+    render();
+    return;
+  }
+
   const actionButton = event.target.closest("[data-card-action]");
   if (actionButton) {
     const sku = actionButton.dataset.sku;

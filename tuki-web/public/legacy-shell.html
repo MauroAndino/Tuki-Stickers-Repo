@@ -204,13 +204,18 @@
                 </div>
 
                 <div id="catalog-theme-panel" class="catalog-utility-panel">
-                  <form id="theme-form" class="form-grid compact-form">
-                    <label class="wide">
-                      Nueva tematica
-                      <input name="themeName" placeholder="Anime" required />
-                    </label>
-                    <button type="submit" class="secondary-button wide">Agregar tematica</button>
-                  </form>
+                  <div class="theme-panel-header">
+                    <button type="button" id="toggle-theme-editor" class="ghost-button compact-toggle-button">Editar categorias</button>
+                  </div>
+                  <div id="theme-editor-panel" class="theme-editor-panel">
+                    <form id="theme-form" class="form-grid compact-form">
+                      <label class="wide">
+                        Nueva tematica
+                        <input name="themeName" placeholder="Anime" required />
+                      </label>
+                      <button type="submit" class="secondary-button wide">Agregar tematica</button>
+                    </form>
+                  </div>
                   <div id="theme-list" class="list-card"></div>
                 </div>
                 <div id="catalog-gallery-grid" class="magazine-grid empty-state-inline"></div>
