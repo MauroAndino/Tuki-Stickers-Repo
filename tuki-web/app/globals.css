@@ -78,8 +78,8 @@ img {
   position: fixed;
   inset: 0;
   z-index: 54;
-  background: rgba(24, 17, 11, 0.32);
-  backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.18);
+  backdrop-filter: blur(10px);
   opacity: 0;
   transition: opacity 180ms ease;
 }
@@ -336,19 +336,19 @@ img {
 }
 
 .bento-card-coral {
-  background: linear-gradient(135deg, #ff7b72 0%, #ff5f57 100%);
+  background: linear-gradient(135deg, #ff8f88 0%, #ff6f67 100%);
 }
 
 .bento-card-blue {
-  background: linear-gradient(135deg, #4ea1ff 0%, #0a84ff 100%);
+  background: linear-gradient(135deg, #6ab1ff 0%, #2d8fff 100%);
 }
 
 .bento-card-mustard {
-  background: linear-gradient(135deg, #f7c948 0%, #f4b400 100%);
+  background: linear-gradient(135deg, #f3cb71 0%, #e6b447 100%);
 }
 
 .bento-card-emerald {
-  background: linear-gradient(135deg, #32d59c 0%, #10b981 100%);
+  background: linear-gradient(135deg, #52d6aa 0%, #19bc8b 100%);
 }
 
 .bento-card-coral .hint,
@@ -551,8 +551,8 @@ select {
 
 input:focus,
 select:focus {
-  border-color: rgba(239, 108, 47, 0.45);
-  box-shadow: 0 0 0 4px rgba(239, 108, 47, 0.12);
+  border-color: rgba(10, 132, 255, 0.35);
+  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.12);
 }
 
 .gallery-toolbar,
@@ -622,7 +622,7 @@ select:focus {
   min-height: 1.7rem;
   padding: 0 0.72rem;
   border-radius: 999px;
-  background: rgba(118, 105, 91, 0.08);
+  background: rgba(29, 29, 31, 0.06);
   font-size: 0.7rem;
   font-weight: 800;
   color: var(--muted);
@@ -763,6 +763,15 @@ select:focus {
 .scanner-premium-card .primary-button {
   background: linear-gradient(135deg, #0a84ff 0%, #2563eb 100%);
   box-shadow: 0 12px 28px rgba(10, 132, 255, 0.18);
+}
+
+.pos-scanner-panel .scanner-toolbar .scanner-actions {
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.pos-footer-actions {
+  gap: 1rem;
 }
 
 #scanner-video {
@@ -955,8 +964,9 @@ select:focus {
 
   body {
     background:
-      radial-gradient(circle at top center, rgba(255, 215, 182, 0.46), transparent 30%),
-      linear-gradient(180deg, #fffdf9 0%, #f5efe7 100%);
+      radial-gradient(circle at top center, rgba(10, 132, 255, 0.09), transparent 28%),
+      radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.06), transparent 26%),
+      linear-gradient(180deg, #fafafc 0%, #f5f5f7 100%);
   }
 
   .app-shell {
@@ -975,8 +985,8 @@ select:focus {
     padding: 1rem;
     border: none;
     border-radius: 0 1.6rem 1.6rem 0;
-    background: rgba(255, 252, 247, 0.98);
-    box-shadow: 0 24px 54px rgba(31, 21, 13, 0.2);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 24px 54px rgba(15, 23, 42, 0.12);
     backdrop-filter: blur(18px);
     transform: translateX(-105%);
     transition: transform 220ms ease;
@@ -1019,7 +1029,7 @@ select:focus {
     border: 1px solid rgba(78, 61, 41, 0.12);
     border-radius: 1rem;
     background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 14px 32px rgba(31, 21, 13, 0.14);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.1);
     backdrop-filter: blur(18px);
   }
 
@@ -1042,7 +1052,7 @@ select:focus {
     height: 2.2rem;
     border: 1px solid rgba(78, 61, 41, 0.08);
     border-radius: 999px;
-    background: rgba(118, 105, 91, 0.08);
+    background: rgba(29, 29, 31, 0.06);
     color: var(--text);
     font-size: 1.3rem;
     line-height: 1;
@@ -1064,8 +1074,8 @@ select:focus {
   }
 
   .nav-link.active {
-    border-color: rgba(78, 61, 41, 0.08);
-    box-shadow: 0 8px 18px rgba(45, 31, 14, 0.08);
+    border-color: rgba(29, 29, 31, 0.08);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.07);
   }
 
   .panel-muted {
@@ -1253,11 +1263,11 @@ select:focus {
 }
 
 .hero-card-primary {
-  background: linear-gradient(145deg, #4ea1ff 0%, #0a84ff 52%, #6eb5ff 100%);
+  background: linear-gradient(145deg, #7ab8ff 0%, #3395ff 52%, #9cccff 100%);
 }
 
 .cash-balance-card {
-  background: linear-gradient(145deg, #32d59c 0%, #10b981 52%, #6fe0b8 100%);
+  background: linear-gradient(145deg, #67dcb4 0%, #1fbe8d 52%, #93e5c8 100%);
 }
 
 .hero-card strong,
@@ -1350,8 +1360,9 @@ select:focus {
 }
 
 .subtle-badge {
-  background: rgba(255, 255, 255, 0.18);
-  color: inherit;
+  background: rgba(29, 29, 31, 0.06);
+  color: var(--muted);
+  border-color: rgba(29, 29, 31, 0.08);
 }
 
 .assistant-block {
@@ -1566,7 +1577,7 @@ select:focus {
 
 .total-row-strong strong {
   font-size: 2.1rem;
-  color: #315ac9;
+  color: #0a84ff;
 }
 
 .cashflow-hero {
@@ -1582,11 +1593,11 @@ select:focus {
 }
 
 .positive-row strong {
-  color: #315ac9;
+  color: #0a84ff;
 }
 
 .negative-row strong {
-  color: #d64545;
+  color: #ff453a;
 }
 
 @media (min-width: 761px) {
@@ -1681,6 +1692,11 @@ select:focus {
   .scanner-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
+  }
+
+  .pos-scanner-panel .scanner-toolbar .scanner-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
   }
 
   .scanner-stage {
