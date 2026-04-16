@@ -2676,6 +2676,21 @@ async function persistState(options = {}) {
   return queueRemotePersist(options);
 }
 
+function isRemoteSnapshotNewer(remoteSnapshot, localSnapshot = state) {
+  const remoteUpdatedAt = remoteSnapshot?.updatedAt || "";
+  const localUpdatedAt = localSnapshot?.updatedAt || "";
+
+  if (!remoteUpdatedAt) {
+    return false;
+  }
+
+  if (!localUpdatedAt) {
+    return true;
+  }
+
+  return remoteUpdatedAt > localUpdatedAt;
+}
+
 async function initRemoteSync() {
   if (!remoteState.enabled) {
     setSyncStatus("Modo local", "Sin sincronizacion remota.");
@@ -2685,9 +2700,12 @@ async function initRemoteSync() {
   setSyncStatus("Conectando", "Buscando datos compartidos...");
   try {
     const remoteSnapshot = await fetchRemoteSnapshot();
-    if (remoteSnapshot) {
+    if (remoteSnapshot && isRemoteSnapshotNewer(remoteSnapshot)) {
       applyStateSnapshot(remoteSnapshot);
       await fetchAndApplyRemoteImages();
+    } else if (remoteSnapshot) {
+      await pushRemoteSnapshot();
+      await syncAllImagesToRemote();
     } else {
       await pushRemoteSnapshot();
       await syncAllImagesToRemote();
@@ -2817,9 +2835,7 @@ async function syncFromRemoteIfNeeded() {
       return;
     }
 
-    const remoteUpdatedAt = remoteSnapshot.updatedAt || "";
-    const localUpdatedAt = state.updatedAt || "";
-    if (remoteUpdatedAt && remoteUpdatedAt === localUpdatedAt) {
+    if (!isRemoteSnapshotNewer(remoteSnapshot)) {
       return;
     }
 
@@ -3017,14 +3033,14 @@ function startRealtimeSync() {
         },
       },
     })
-    .on("broadcast", { event: "state-sync" }, ({ payload }) => {
-      Promise.resolve().then(async () => {
-      const nextPayload = payload?.state;
-      if (!nextPayload?.updatedAt || nextPayload.updatedAt === state.updatedAt) {
-        return;
-      }
+      .on("broadcast", { event: "state-sync" }, ({ payload }) => {
+        Promise.resolve().then(async () => {
+        const nextPayload = payload?.state;
+        if (!isRemoteSnapshotNewer(nextPayload)) {
+          return;
+        }
 
-      applyStateSnapshot(nextPayload);
+        applyStateSnapshot(nextPayload);
       await fetchAndApplyRemoteImages();
       render();
       remoteState.lastSyncedAt = Date.now();
@@ -3038,12 +3054,12 @@ function startRealtimeSync() {
         schema: "public",
         table: "app_state",
         filter: `id=eq.${remoteConfig.stateRowId}`,
-      },
-      async (payload) => {
-        const nextPayload = payload?.new?.payload;
-        if (nextPayload?.updatedAt && nextPayload.updatedAt === state.updatedAt) {
-          return;
-        }
+        },
+        async (payload) => {
+          const nextPayload = payload?.new?.payload;
+          if (!isRemoteSnapshotNewer(nextPayload)) {
+            return;
+          }
 
         if (nextPayload) {
           applyStateSnapshot(nextPayload);
