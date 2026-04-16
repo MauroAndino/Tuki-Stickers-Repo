@@ -2394,8 +2394,8 @@ function aggregateSalesBy(getLabel) {
 function getFilteredCatalogProducts() {
   const search = normalizeText(els.catalogSearch.value);
   const themeFilter = els.catalogThemeFilter?.value || "all";
-  const materialFilters = getSelectedValues(els.catalogMaterialFilter);
-  const stockFilters = getSelectedValues(els.catalogStockFilter);
+  const materialFilters = getSelectedValues(els.catalogMaterialFilter).filter((value) => value && value !== "all");
+  const stockFilters = getSelectedValues(els.catalogStockFilter).filter((value) => value && value !== "all");
   const minUnits = Number(els.catalogMinUnits?.value || 0);
   const dateFrom = els.catalogDateFrom?.value || "";
   const dateTo = els.catalogDateTo?.value || "";
