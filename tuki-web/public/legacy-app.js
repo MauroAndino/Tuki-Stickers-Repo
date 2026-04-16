@@ -2691,6 +2691,40 @@ function isRemoteSnapshotNewer(remoteSnapshot, localSnapshot = state) {
   return remoteUpdatedAt > localUpdatedAt;
 }
 
+function mergeByKey(localItems, remoteItems, keyName) {
+  const merged = new Map();
+
+  (localItems || []).forEach((item) => {
+    const key = item?.[keyName];
+    if (key) {
+      merged.set(key, item);
+    }
+  });
+
+  (remoteItems || []).forEach((item) => {
+    const key = item?.[keyName];
+    if (key) {
+      merged.set(key, item);
+    }
+  });
+
+  return [...merged.values()];
+}
+
+function mergeSnapshots(localSnapshot, remoteSnapshot) {
+  return {
+    products: mergeByKey(localSnapshot?.products, remoteSnapshot?.products, "sku"),
+    themes: [...new Set([...(localSnapshot?.themes || []), ...(remoteSnapshot?.themes || [])])],
+    sales: mergeByKey(localSnapshot?.sales, remoteSnapshot?.sales, "id"),
+    restocks: mergeByKey(localSnapshot?.restocks, remoteSnapshot?.restocks, "id"),
+    updatedAt:
+      [localSnapshot?.updatedAt, remoteSnapshot?.updatedAt]
+        .filter(Boolean)
+        .sort()
+        .at(-1) || null,
+  };
+}
+
 async function initRemoteSync() {
   if (!remoteState.enabled) {
     setSyncStatus("Modo local", "Sin sincronizacion remota.");
@@ -2701,9 +2735,10 @@ async function initRemoteSync() {
   try {
     const remoteSnapshot = await fetchRemoteSnapshot();
     if (remoteSnapshot && isRemoteSnapshotNewer(remoteSnapshot)) {
-      applyStateSnapshot(remoteSnapshot);
+      applyStateSnapshot(mergeSnapshots(state, remoteSnapshot));
       await fetchAndApplyRemoteImages();
     } else if (remoteSnapshot) {
+      applyStateSnapshot(mergeSnapshots(state, remoteSnapshot));
       await pushRemoteSnapshot();
       await syncAllImagesToRemote();
     } else {
@@ -2839,7 +2874,7 @@ async function syncFromRemoteIfNeeded() {
       return;
     }
 
-    applyStateSnapshot(remoteSnapshot);
+    applyStateSnapshot(mergeSnapshots(state, remoteSnapshot));
     await fetchAndApplyRemoteImages();
     render();
     remoteState.lastSyncedAt = Date.now();
@@ -3040,9 +3075,9 @@ function startRealtimeSync() {
           return;
         }
 
-        applyStateSnapshot(nextPayload);
-      await fetchAndApplyRemoteImages();
-      render();
+        applyStateSnapshot(mergeSnapshots(state, nextPayload));
+        await fetchAndApplyRemoteImages();
+        render();
       remoteState.lastSyncedAt = Date.now();
       setSyncStatus("Sync activa", "Cambio recibido al instante.");
       });
@@ -3061,10 +3096,10 @@ function startRealtimeSync() {
             return;
           }
 
-        if (nextPayload) {
-          applyStateSnapshot(nextPayload);
-          await fetchAndApplyRemoteImages();
-          render();
+          if (nextPayload) {
+            applyStateSnapshot(mergeSnapshots(state, nextPayload));
+            await fetchAndApplyRemoteImages();
+            render();
           remoteState.lastSyncedAt = Date.now();
           setSyncStatus("Sync activa", "Realtime recibio cambios al instante.");
           return;
