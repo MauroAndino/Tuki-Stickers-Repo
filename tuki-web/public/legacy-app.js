@@ -582,16 +582,16 @@ function applyNavigationHref(href) {
 
 function hydrateLegacyState() {
   state.products = (state.products || []).map((product) => ({
+    ...product,
     image: product.image || "",
     createdAt: product.createdAt || todayString(),
     lastRestockAt: product.lastRestockAt || product.createdAt || todayString(),
     character: product.character === "No" ? "No" : "Si",
-    ...product,
   }));
 
   state.restocks = (state.restocks || []).map((restock) => ({
-    material: restock.material || findProduct(restock.sku)?.material || "Vinilo blanco",
     ...restock,
+    material: restock.material || findProduct(restock.sku)?.material || "Vinilo blanco",
   }));
 }
 
@@ -1512,16 +1512,17 @@ function populateCatalogFilters() {
   const themes = [...new Set(state.products.map((product) => product.theme))].sort();
   const materials = [...new Set(state.products.map((product) => product.material))].sort();
   const selectedTheme = els.catalogThemeFilter?.value || "all";
-  const selectedMaterials = getSelectedValues(els.catalogMaterialFilter);
+  const selectedMaterials = getSelectedValues(els.catalogMaterialFilter).filter((value) => value && value !== "all");
   const selectedStockStates = getSelectedValues(els.catalogStockFilter);
 
   els.catalogThemeFilter.innerHTML = [
     '<option value="all">Filtrar</option>',
     ...themes.map((theme) => `<option value="${theme}">${theme}</option>`),
   ].join("");
-  els.catalogMaterialFilter.innerHTML = materials
-    .map((material) => `<option value="${material}">${material}</option>`)
-    .join("");
+  els.catalogMaterialFilter.innerHTML = [
+    '<option value="all">Todos los materiales</option>',
+    ...materials.map((material) => `<option value="${material}">${material}</option>`),
+  ].join("");
 
   [...els.catalogThemeFilter.options].forEach((option) => {
     option.selected = option.value === selectedTheme;
