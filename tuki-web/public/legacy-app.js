@@ -2691,20 +2691,55 @@ function isRemoteSnapshotNewer(remoteSnapshot, localSnapshot = state) {
   return remoteUpdatedAt > localUpdatedAt;
 }
 
+function getMergeKey(item, keyName) {
+  const rawKey = item?.[keyName];
+  if (!rawKey) {
+    return "";
+  }
+
+  return keyName === "sku" ? sanitizeSku(rawKey) : String(rawKey);
+}
+
+function mergeRecords(existingItem, incomingItem) {
+  if (!existingItem) {
+    return incomingItem;
+  }
+
+  if (!incomingItem) {
+    return existingItem;
+  }
+
+  const merged = { ...existingItem };
+
+  Object.entries(incomingItem).forEach(([field, value]) => {
+    if (value === undefined || value === null) {
+      return;
+    }
+
+    if (typeof value === "string" && value.trim() === "" && typeof merged[field] === "string" && merged[field].trim() !== "") {
+      return;
+    }
+
+    merged[field] = value;
+  });
+
+  return merged;
+}
+
 function mergeByKey(localItems, remoteItems, keyName) {
   const merged = new Map();
 
   (localItems || []).forEach((item) => {
-    const key = item?.[keyName];
+    const key = getMergeKey(item, keyName);
     if (key) {
       merged.set(key, item);
     }
   });
 
   (remoteItems || []).forEach((item) => {
-    const key = item?.[keyName];
+    const key = getMergeKey(item, keyName);
     if (key) {
-      merged.set(key, item);
+      merged.set(key, mergeRecords(merged.get(key), item));
     }
   });
 
@@ -2948,15 +2983,15 @@ async function fetchAndApplyRemoteImages() {
     );
   }
 
-  const rows = await response.json();
-  const imagesBySku = new Map(
-    rows.map((row) => [sanitizeSku(row.sku), row.image || ""]),
-  );
+    const rows = await response.json();
+    const imagesBySku = new Map(
+      rows.map((row) => [sanitizeSku(row.sku), row.image || ""]),
+    );
 
-  state.products = state.products.map((product) => ({
-    ...product,
-    image: imagesBySku.get(sanitizeSku(product.sku)) || "",
-  }));
+    state.products = state.products.map((product) => ({
+      ...product,
+      image: imagesBySku.get(sanitizeSku(product.sku)) || product.image || "",
+    }));
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
