@@ -583,7 +583,7 @@ function applyNavigationHref(href) {
 function hydrateLegacyState() {
   state.products = (state.products || []).map((product) => ({
     ...product,
-    image: product.image || "",
+    image: product.image || product.image_url || "",
     createdAt: product.createdAt || todayString(),
     lastRestockAt: product.lastRestockAt || product.createdAt || todayString(),
     character: product.character === "No" ? "No" : "Si",
@@ -2447,8 +2447,9 @@ function getSortedProducts() {
 }
 
 function renderProductImage(product) {
-  if (product.image) {
-    return `<img class="catalog-image" src="${product.image}" alt="${product.name}" />`;
+  const imageSource = product.image || product.image_url || "";
+  if (imageSource) {
+    return `<img class="catalog-image" src="${imageSource}" alt="${product.name}" />`;
   }
 
   return `<div class="catalog-image-placeholder">Sin imagen</div>`;
@@ -3192,7 +3193,7 @@ function buildRemoteSnapshot() {
   return {
     products: state.products.map((product) => ({
       ...product,
-      image: "",
+      image: product.image || product.image_url || "",
     })),
     themes: cloneData(state.themes),
     sales: cloneData(state.sales),
